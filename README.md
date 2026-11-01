@@ -62,6 +62,12 @@ Each 4K library has **two extra entries** pointing at the same Plex library with
 
 Two reasons. Kometa reuses the items it loaded at the start of a library's run, so overlays in the *same* entry wouldn't see scores written moments earlier; a separate entry loads them fresh. And the main entry keeps running collections in full every night while scores and overlays run on the tiers.
 
+Every other movie and TV library (HD, International, Kids, Anime) has a `<Library> Ratings` entry too, on the same tiers but with no overlays yet. Scores are consistent everywhere, and showing rings in a library later only needs an Overlays entry. Plex shares a title's user rating across all its copies on a server, so the HD and 4K copies of a film always agree.
+
+A new Ratings entry's first fill needs a full run. In a large library that's tens of thousands of Plex reloads, and a single Plex timeout aborts the whole library's operations. For TV libraries, running it in alphabetical chunks with the `index` schedule mode (`--mode "index(a-c)"` … `--mode "index(u-z#)"`) and retrying failed chunks was enough.
+
+Film libraries were another matter on my server. Before writing, Kometa reloads items from Plex 100 at a time, and a film Plex hasn't read recently takes 3–7 seconds (a show takes a fraction of a second). Behind a reverse proxy with a 30-second timeout, every batch of 100 cold films timed out. [`tools/fill_scores.py`](tools/fill_scores.py) does the first fill without those reloads. It reads the IDs from one library listing, fetches MDBList averages 100 per request, and batch-writes exactly the value Kometa would write. 54,000 films took a few minutes and about 550 MDBList requests. Kometa's tiers take over from there.
+
 Two things to know if you copy this pattern:
 
 - Kometa keeps a separate "what's on this poster" record per entry, and names its saved originals after the entry (e.g. `Movies 4K Overlays Original Posters`). Only one entry per Plex library should ever have `overlay_files`, or the records drift apart.
