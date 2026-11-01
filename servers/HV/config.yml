@@ -16,7 +16,6 @@ tmdb:                                           # REQUIRED for the script to run
   cache_expiration: 2   # vote counts for new titles change daily; default 60 left new shows ringless
   region:
 
-
 ## At least one library has to be configured for the script to do anything meaningful
 libraries:
   Movies 4K:
@@ -94,201 +93,11 @@ libraries:
     collection_files:
     - file: config/tv_anime_collections.yml
 
-  # ---- Scores only (MDBList average into the user rating), no overlays yet. Same refresh tiers as the 4K libraries.
-  # Plex shares a title's user rating across all its copies, so these agree with the 4K libraries' scores.
-  Movies Ratings:
-    library_name: Movies
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-  TV Shows Ratings:
-    library_name: TV Shows
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-  Movies International Ratings:
-    library_name: Movies International
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-  TV Shows International Ratings:
-    library_name: TV Shows International
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-  Kids Movies Ratings:
-    library_name: Kids Movies
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-  Kids TV Shows Ratings:
-    library_name: Kids TV Shows
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-  Anime Movies (Dual-Audio) Ratings:
-    library_name: Anime Movies (Dual-Audio)
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-  Anime Movies (Subs) Ratings:
-    library_name: Anime Movies (Subs)
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-  Anime TV (Dubs) Ratings:
-    library_name: Anime TV (Dubs)
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-  Anime TV (Subs) Ratings:
-    library_name: Anime TV (Subs)
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (stored as 0-10)
-
-  # ---- Score ring + 4K label (4K libraries). Each '<Lib> Ratings' entry must stay above its '<Lib> Overlays' entry:
-  # the overlay entry loads items fresh, so it sees the user ratings written moments earlier.
-  Movies 4Kmini Ratings:
-    library_name: Movies 4Kmini
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (0-100 shown on the ring, stored as 0-10)
+  # ---- Score ring + 4K label (4K libraries). Overlays only: the scores themselves (MDBList average in the
+  # user rating) are written for every library by tools/sync_scores.py, nightly before this run.
   Movies 4Kmini Overlays:
     library_name: Movies 4Kmini
-    schedule:                         # score refresh tiers: first match wins
+    schedule:                         # overlay redraw tiers: first match wins
     - schedule: yearly(01/01)
       mode: full
     - schedule: monthly(1)
@@ -302,26 +111,9 @@ libraries:
     overlay_files:
     - file: config/score_ring_4k.yml
 
-  Movies 4K Ratings:
-    library_name: Movies 4K
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (0-100 shown on the ring, stored as 0-10)
   Movies 4K Overlays:
     library_name: Movies 4K
-    schedule:                         # score refresh tiers: first match wins
+    schedule:                         # overlay redraw tiers: first match wins
     - schedule: yearly(01/01)
       mode: full
     - schedule: monthly(1)
@@ -334,26 +126,9 @@ libraries:
     - overlays
     overlay_files:
     - file: config/score_ring_4k.yml
-  TV Shows 4K Ratings:
-    library_name: TV Shows 4K
-    schedule:                         # score refresh tiers: first match wins
-    - schedule: yearly(01/01)
-      mode: full
-    - schedule: monthly(1)
-      mode: added(400)
-    - schedule: weekly(sunday)
-      mode: added(35)
-    - schedule: daily
-      mode: added(2)
-    run_order:
-    - operations
-    operations:
-      mass_metadata_update:
-        ratings:
-          user: [mdb_average, remove]   # MDBList average (0-100 shown on the ring, stored as 0-10)
   TV Shows 4K Overlays:
     library_name: TV Shows 4K
-    schedule:                         # score refresh tiers: first match wins
+    schedule:                         # overlay redraw tiers: first match wins
     - schedule: yearly(01/01)
       mode: full
     - schedule: monthly(1)

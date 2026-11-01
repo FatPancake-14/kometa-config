@@ -29,15 +29,42 @@ Why not MDBList's *score*? Despite the name, it isn't a quality score. Above rou
 
 No ring is shown when a title has **fewer than 20 TMDb votes** (too few to trust), no score, or a perfect 100.
 
-How it works in Kometa:
+How it works:
 
-1. `mass_metadata_update` → `ratings: user: [mdb_average, remove]` writes the average into Plex's **user rating** field (as 0–10). Plex's own audience and critic ratings are left alone, so they keep whatever source Plex gives them.
+1. [`tools/sync_scores.py`](tools/sync_scores.py) writes the average into Plex's **user rating** field (as 0–10) for every movie and TV library, every night before Kometa runs. Plex's own audience and critic ratings are left alone, so they keep whatever source Plex gives them. Plex shares a title's user rating across all its copies on a server, so the HD and 4K copies of a film always agree. (Why a script and not Kometa: [see below](#scores-a-script-instead-of-kometa).)
 2. [`overlays/score_ring_4k.yml`](overlays/score_ring_4k.yml) has one ring overlay per score (1–99). Each matches its slice of the user rating with a `plex_search`, which lets Plex do the matching (about 3× faster than `plex_all` + `filters` across 100 overlays), plus `filters: tmdb_vote_count.gte: 20`. `ignore_blank_results` keeps empty bands as warnings, not errors.
 3. The ring and label are images, not Kometa text: Kometa can't round only some corners or draw arcs, and an image allows the exact design. [`tools/build_overlays.py`](tools/build_overlays.py) draws all of them at 4× and box-downsamples for clean edges.
 
-### Refreshing scores without re-rendering everything
+### Scores: a script instead of Kometa
 
-Kometa 2.5.4's **library schedule modes** let a run process only some items. Scores move most in a title's first weeks, so each 4K library refreshes on tiers (first match wins):
+Kometa can do this itself (`mass_metadata_update` → `ratings: user: [mdb_average, remove]`), and that's how this setup started. It didn't scale on my server. Before writing, Kometa reloads every item from Plex, 100 at a time. A film Plex hasn't read recently takes 3–7 seconds, so behind a reverse proxy with a 30-second timeout every batch of cold films timed out, and one timeout aborts the whole library's operations. Kometa could fill the TV libraries; it couldn't fill any film library.
+
+`sync_scores.py` never reads items one at a time:
+
+- one Plex listing per library, in pages of 500 (IDs and current scores);
+- one MDBList request per 100 titles, by TMDb ID for movies and TVDb ID for shows, as Kometa does;
+- one Plex batch edit per score value, only for scores that changed.
+
+| | Kometa | Script |
+|---|---|---|
+| TV Shows (14,000 shows) | ~15 min | ~3.5 min |
+| Movies (37,000 films) | timed out every time | ~3 min |
+| All 13 libraries (~90,000 titles) | — | ~12 min, ~850 MDBList requests |
+
+It writes the same value Kometa would (average × 0.1, one decimal, field locked), and clears the score when MDBList has none. One difference: an average of 0 means MDBList has no ratings yet, so the title gets no score, where Kometa writes 0.0.
+
+Because a full pass is cheap, every score refreshes every night: no refresh tiers for scores. It has two safety catches. A library whose listing or MDBList lookups keep failing is skipped with no changes. And if an unusual number of real scores would disappear at once (more than 2% of a library, e.g. a partial MDBList response), it clears none of them and logs a warning.
+
+It runs from cron at 03:30 under `flock`, and the Kometa run for the same server waits on the same lock, so overlays always see the night's scores:
+
+```
+30 3 * * * /home/ubuntu/scores/run_scores.sh >> /home/ubuntu/scores/sync.log 2>&1
+0 4 * * *  flock -w 3600 /tmp/kometa-hv.lock docker run --rm ... kometateam/kometa --run
+```
+
+### Redrawing rings without re-rendering everything
+
+Kometa 2.5.4's **library schedule modes** let a run process only some items. Scores move most in a title's first weeks, so each 4K library's overlays redraw on tiers (first match wins):
 
 ```yaml
 schedule:
@@ -51,22 +78,11 @@ schedule:
   mode: added(2)        # new arrivals (and shows with new episodes), nightly
 ```
 
-A poster is only redrawn when its score changes, and `cache_expiration` (settings and `mdblist`) is 6 days so the weekly and monthly runs fetch fresh averages instead of reusing cached ones.
+A poster is only redrawn when its score band or number changes. An older title whose score moves gets its new ring at its next tier run.
 
-**Set `tmdb: cache_expiration` too.** It's separate and defaults to 60 days. Kometa caches each title's TMDb vote count the first time it sees it. A show first seen before it aired is stored with 0 votes, so it fails the 20-vote rule for up to two months, however popular it becomes. Here it's 2 days, which costs only a few hundred free TMDb lookups a night.
+**Set `tmdb: cache_expiration`.** It defaults to 60 days. Kometa caches each title's TMDb vote count the first time it sees it. A show first seen before it aired is stored with 0 votes, so it fails the 20-vote rule for up to two months, however popular it becomes. Here it's 2 days, which costs only a few hundred free TMDb lookups a night.
 
-Each 4K library has **two extra entries** pointing at the same Plex library with `library_name:` (see [`servers/HV/config.yml`](servers/HV/config.yml)):
-
-- `<Library> Ratings`: `run_order: [operations]`, writes the scores.
-- `<Library> Overlays`: `run_order: [overlays]`, draws the ring and label.
-
-Two reasons. Kometa reuses the items it loaded at the start of a library's run, so overlays in the *same* entry wouldn't see scores written moments earlier; a separate entry loads them fresh. And the main entry keeps running collections in full every night while scores and overlays run on the tiers.
-
-Every other movie and TV library (HD, International, Kids, Anime) has a `<Library> Ratings` entry too, on the same tiers but with no overlays yet. Scores are consistent everywhere, and showing rings in a library later only needs an Overlays entry. Plex shares a title's user rating across all its copies on a server, so the HD and 4K copies of a film always agree.
-
-A new Ratings entry's first fill needs a full run. In a large library that's tens of thousands of Plex reloads, and a single Plex timeout aborts the whole library's operations. For TV libraries, running it in alphabetical chunks with the `index` schedule mode (`--mode "index(a-c)"` … `--mode "index(u-z#)"`) and retrying failed chunks was enough.
-
-Film libraries were another matter on my server. Before writing, Kometa reloads items from Plex 100 at a time, and a film Plex hasn't read recently takes 3–7 seconds (a show takes a fraction of a second). Behind a reverse proxy with a 30-second timeout, every batch of 100 cold films timed out. [`tools/fill_scores.py`](tools/fill_scores.py) does the first fill without those reloads. It reads the IDs from one library listing, fetches MDBList averages 100 per request, and batch-writes exactly the value Kometa would write. 54,000 films took a few minutes and about 550 MDBList requests. Kometa's tiers take over from there.
+Each 4K library has an extra `<Library> Overlays` entry pointing at the same Plex library with `library_name:` and `run_order: [overlays]` (see [`servers/HV/config.yml`](servers/HV/config.yml)). That lets the main entry keep running collections in full every night while the overlays run on the tiers. Showing rings in another library later only needs another Overlays entry, since every library already has scores.
 
 Two things to know if you copy this pattern:
 
@@ -115,6 +131,7 @@ Two gotchas found along the way:
 
 - **Secrets** are `<<placeholders>>`. Kometa fills them from `KOMETA_*` environment variables or a `.env` file next to `config.yml`; see [`servers/.env.example`](servers/.env.example). For example `token: <<plex_token>>` comes from `KOMETA_PLEX_TOKEN`.
 - **Overlays:** `pip install pillow`, run `python3 tools/build_overlays.py`, then copy `overlays/images/` to `config/overlay-images/` and `overlays/score_ring_4k.yml` to `config/` on your Kometa server. Change sizes, colours, bands or the vote threshold at the top of the script.
+- **Scores:** `pip install pyyaml`, copy [`tools/sync_scores.py`](tools/sync_scores.py) to your server and run it with your `config.yml` and library names (add `--dry` to see what it would change). [`servers/HV/run_scores.sh`](servers/HV/run_scores.sh) is my nightly wrapper. The overlays need these scores in place before Kometa runs.
 - **Font:** [Figtree](https://github.com/erikdkennedy/figtree) (SIL Open Font License, in [`fonts/`](fonts)), weight-matched to Avenir Next Bold.
 - **Keeping this repo current:** `tools/pull_from_server.sh` copies each server's live YAML files into `servers/<name>/` and runs [`tools/sanitize.py`](tools/sanitize.py), which replaces secrets with placeholders and refuses to pass anything that still looks like a key, token or IP address.
 
