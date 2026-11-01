@@ -1,0 +1,32 @@
+overlays:
+  4K:
+    overlay:
+      name: text(4K)
+      weight: 20
+      horizontal_offset: 55
+      horizontal_align: left
+      vertical_offset: 55
+      vertical_align: top
+      font: config/fonts/AvenirNextLTPro-Bold.ttf
+      font_size: 60
+      font_color: "#ffffff"
+      back_color: "#282a2d"
+      back_line_color: '#3e44ff'
+      back_line_width: 10
+      back_radius: 25
+      back_padding: 30
+    plex_search:
+      all:
+        resolution: 4K
+
+#  Force-Filter:
+#    overlay:
+#      name: Force-Filter
+#      url: https://raw.githubusercontent.com/FatPancake-14/plex-meta-manager/main/config/overlays/Force-Filter.png
+#      vertical_align: bottom
+#    plex_search:
+#      all:
+#        year.not: 1800
+#    filters:
+#      has_dolby_vision: true
+

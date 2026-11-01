@@ -1,0 +1,65 @@
+# UK streaming rows, shown in each library's Recommended tab only (not on Home).
+# Only titles that are in the library appear; rows with fewer than 5 of them are removed automatically.
+#   Top on ...      MDBList's weekly UK streaming charts (JustWatch data), in chart order.
+#   Popular on ...  TMDb's "available on" data for the UK, most popular first (these services have no chart).
+#                   Kometa fetches every matched title from Plex before applying the row's limit of 50, so very large
+#                   libraries pass a smaller discover_limit (template_variables in config.yml) to keep runs short.
+templates:
+  streaming_chart:
+    mdblist_streaming:
+      country: gb
+      period: weekly
+      provider: <<provider>>
+    collection_order: custom
+    sync_mode: sync
+    limit: 50
+    minimum_items: 5            # a row of one or two titles looks broken; skip (and delete) it
+    delete_below_minimum: true
+    visible_home: false
+    visible_shared: false
+    visible_library: true
+    sort_title: "~<<order>>_<<collection_name>>"
+    summary: "What's most watched on <<service>> in the UK this week, from this library."
+  streaming_popular:
+    default:
+      discover_limit: 500
+    tmdb_discover:
+      watch_region: GB
+      with_watch_providers: <<providers>>
+      with_watch_monetization_types: flatrate|free|ads
+      sort_by: popularity.desc
+      limit: <<discover_limit>>
+    collection_order: custom
+    sync_mode: sync
+    limit: 50
+    minimum_items: 5            # a row of one or two titles looks broken; skip (and delete) it
+    delete_below_minimum: true
+    visible_home: false
+    visible_shared: false
+    visible_library: true
+    sort_title: "~<<order>>_<<collection_name>>"
+    summary: "The most popular titles available on <<service>> in the UK, from this library."
+
+collections:
+  Top on Netflix:
+    template: {name: streaming_chart, provider: netflix, service: Netflix, order: "01"}
+  Top on Prime Video:
+    template: {name: streaming_chart, provider: amazonprimevideo, service: Prime Video, order: "02"}
+  Top on Disney+:
+    template: {name: streaming_chart, provider: disney, service: Disney+, order: "03"}
+  Top on Apple TV+:
+    template: {name: streaming_chart, provider: appletv, service: Apple TV+, order: "04"}
+  Top on Paramount+:
+    template: {name: streaming_chart, provider: paramountpremium, service: Paramount+, order: "05"}
+  Top on BritBox:
+    template: {name: streaming_chart, provider: britbox, service: BritBox, order: "06"}
+  Top on MUBI:
+    template: {name: streaming_chart, provider: mubi, service: MUBI, order: "07"}
+  Popular on BBC iPlayer:
+    template: {name: streaming_popular, providers: "38", service: BBC iPlayer, order: "08"}
+  Popular on ITVX:
+    template: {name: streaming_popular, providers: "41|2300", service: ITVX, order: "09"}
+  Popular on Channel 4:
+    template: {name: streaming_popular, providers: "103|2311", service: Channel 4, order: "10"}
+  Popular on NOW:
+    template: {name: streaming_popular, providers: "39|591", service: NOW, order: "11"}

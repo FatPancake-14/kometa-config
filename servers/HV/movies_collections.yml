@@ -1,0 +1,52 @@
+collections:
+  Trending Movies:
+    mdblist_list: https://mdblist.com/lists/rjp361/trakt-trending-digital-release
+    filters:
+      release: 180
+    limit: 30
+    collection_order: custom
+    sync_mode: sync
+    visible_home: true
+    visible_library: true
+    visible_shared: true
+    sort_title: "!1_trending"
+    summary: Movies Trending across the internet
+    url_poster: https://theposterdb.com/api/assets/345270
+
+  Popular Movies:
+    imdb_chart: popular_movies
+    filters:
+      release: 365
+    limit: 50
+    collection_order: custom
+    sync_mode: sync
+    visible_home: true
+    visible_library: true
+    visible_shared: true
+    sort_title: "!2_popular"
+    summary: Popular movies across the internet
+    url_poster: https://theposterdb.com/api/assets/246305
+
+  Top Rated Movies:
+    imdb_chart: top_movies
+    collection_order: custom
+    sync_mode: sync
+    visible_home: false
+    visible_library: true
+    visible_shared: false
+    sort_title: "!3_top_rated"
+    summary: The IMDB Top Rated Movies
+    url_poster: https://theposterdb.com/api/assets/248186
+
+  Recently Released Movies:
+    smart_filter:
+      all:
+        release: 30
+      sort_by: added.desc
+      limit: 50
+    sort_title: "!4_Recently_Released"
+    sync_mode: sync
+    url_poster: https://theposterdb.com/api/assets/345277
+    visible_home: true
+    visible_shared: true
+    visible_library: true

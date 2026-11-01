@@ -1,0 +1,257 @@
+## This file is a template remove the .template to use the file
+
+## Plex and TMDb are the two connections which are required for the script to run
+plex:                                # Can be individually specified per library as well; REQUIRED for the script to run
+  url: <<plex_url>>
+  token: <<plex_token>>
+  timeout: 60
+  db_cache: 40
+  clean_bundles: false
+  empty_trash: false
+  optimize: false
+  verify_ssl: true
+tmdb:                                           # REQUIRED for the script to run
+  apikey: <<tmdb_apikey>>
+  language: en
+  cache_expiration: 2   # vote counts for new titles change daily; default 60 left new shows ringless
+  region:
+
+
+## At least one library has to be configured for the script to do anything meaningful
+libraries:
+  Movies 4K:
+    remove_overlays: false
+    collection_files:
+    - file: config/movies_collections.yml
+    - file: config/score_collections_movies.yml
+    - file: config/streaming_collections.yml
+  Movies 4Kmini:
+    remove_overlays: false
+    collection_files:
+    - file: config/movies_collections.yml
+    - file: config/score_collections_movies.yml
+    - file: config/streaming_collections.yml
+  TV Shows 4K:
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_collections.yml
+    - file: config/score_collections_tv.yml
+    - file: config/streaming_collections.yml
+      template_variables:
+        discover_limit: 250
+  Movies:
+    remove_overlays: false
+    collection_files:
+    - file: config/movies_collections.yml
+    - file: config/streaming_collections.yml
+      template_variables:
+        discover_limit: 80
+  TV Shows:
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_collections.yml
+    - file: config/streaming_collections.yml
+      template_variables:
+        discover_limit: 100
+  Movies International:
+    remove_overlays: false
+    collection_files:
+    - file: config/movies_international_collections.yml
+    - file: config/streaming_collections.yml
+      template_variables:
+        discover_limit: 150
+  TV Shows International:
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_international_collections.yml
+    - file: config/streaming_collections.yml
+      template_variables:
+        discover_limit: 150
+  Kids Movies:
+    remove_overlays: false
+    collection_files:
+    - file: config/movies_kids_collections.yml
+    - file: config/kids_rows_collections.yml
+  Kids TV Shows:
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_kids_collections.yml
+    - file: config/kids_rows_collections.yml
+  Anime Movies (Dual-Audio):
+    remove_overlays: false
+    collection_files:
+    - file: config/movies_anime_collections.yml
+  Anime Movies (Subs):
+    remove_overlays: false
+    collection_files:
+    - file: config/movies_anime_collections.yml
+  Anime TV (Dubs):
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_anime_collections.yml
+  Anime TV (Subs):
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_anime_collections.yml
+
+  # ---- IMDb score ring + 4K label (4K libraries). The '... IMDb' entry must stay above its '... Overlays' entry:
+  # the overlay entry loads items fresh, so it sees the user ratings written moments earlier.
+  Movies 4Kmini Ratings:
+    library_name: Movies 4Kmini
+    schedule:                         # score refresh tiers: first match wins
+    - schedule: yearly(01/01)
+      mode: full
+    - schedule: monthly(1)
+      mode: added(400)
+    - schedule: weekly(sunday)
+      mode: added(35)
+    - schedule: daily
+      mode: added(2)
+    run_order:
+    - operations
+    operations:
+      mass_metadata_update:
+        ratings:
+          user: [mdb_average, remove]   # MDBList average (0-100 shown on the ring, stored as 0-10)
+  Movies 4Kmini Overlays:
+    library_name: Movies 4Kmini
+    schedule:                         # score refresh tiers: first match wins
+    - schedule: yearly(01/01)
+      mode: full
+    - schedule: monthly(1)
+      mode: added(400)
+    - schedule: weekly(sunday)
+      mode: added(35)
+    - schedule: daily
+      mode: added(2)
+    run_order:
+    - overlays
+    overlay_files:
+    - file: config/score_ring_4k.yml
+
+  Movies 4K Ratings:
+    library_name: Movies 4K
+    schedule:                         # score refresh tiers: first match wins
+    - schedule: yearly(01/01)
+      mode: full
+    - schedule: monthly(1)
+      mode: added(400)
+    - schedule: weekly(sunday)
+      mode: added(35)
+    - schedule: daily
+      mode: added(2)
+    run_order:
+    - operations
+    operations:
+      mass_metadata_update:
+        ratings:
+          user: [mdb_average, remove]   # MDBList average (0-100 shown on the ring, stored as 0-10)
+  Movies 4K Overlays:
+    library_name: Movies 4K
+    schedule:                         # score refresh tiers: first match wins
+    - schedule: yearly(01/01)
+      mode: full
+    - schedule: monthly(1)
+      mode: added(400)
+    - schedule: weekly(sunday)
+      mode: added(35)
+    - schedule: daily
+      mode: added(2)
+    run_order:
+    - overlays
+    overlay_files:
+    - file: config/score_ring_4k.yml
+  TV Shows 4K Ratings:
+    library_name: TV Shows 4K
+    schedule:                         # score refresh tiers: first match wins
+    - schedule: yearly(01/01)
+      mode: full
+    - schedule: monthly(1)
+      mode: added(400)
+    - schedule: weekly(sunday)
+      mode: added(35)
+    - schedule: daily
+      mode: added(2)
+    run_order:
+    - operations
+    operations:
+      mass_metadata_update:
+        ratings:
+          user: [mdb_average, remove]   # MDBList average (0-100 shown on the ring, stored as 0-10)
+  TV Shows 4K Overlays:
+    library_name: TV Shows 4K
+    schedule:                         # score refresh tiers: first match wins
+    - schedule: yearly(01/01)
+      mode: full
+    - schedule: monthly(1)
+      mode: added(400)
+    - schedule: weekly(sunday)
+      mode: added(35)
+    - schedule: daily
+      mode: added(2)
+    run_order:
+    - overlays
+    overlay_files:
+    - file: config/score_ring_4k.yml
+settings:
+  run_order:
+  - operations
+  - metadata
+  - collections
+  - overlays
+  cache: true
+  cache_expiration: 6                 # short so weekly/monthly IMDb refreshes fetch fresh scores
+  asset_directory:
+  - config/assets
+  asset_folders: true
+  asset_depth: 0
+  create_asset_folders: false
+  prioritize_assets: false
+  dimensional_asset_rename: false
+  download_url_assets: false
+  show_missing_season_assets: false
+  show_missing_episode_assets: false
+  show_asset_not_needed: true
+  sync_mode: append
+  minimum_items: 1
+  default_collection_order: release
+  delete_below_minimum: true
+  delete_not_scheduled: true
+  run_again_delay: 2
+  missing_only_released: false
+  only_filter_missing: false
+  show_unmanaged: true
+  show_unconfigured: true
+  show_filtered: false
+  show_unfiltered: false
+  show_options: true
+  show_missing: false
+  show_missing_assets: true
+  save_report: false
+  tvdb_language: eng
+  ignore_ids:
+  ignore_imdb_ids:
+  item_refresh_delay: 0
+  playlist_sync_to_users:
+  playlist_exclude_users:
+  playlist_report: false
+  verify_ssl: true
+  custom_repo:
+  overlay_artwork_filetype: webp_lossy
+  overlay_artwork_quality: 90
+  auto_sort_hubs: sort_title   # Recommended/Home rows ordered by sort title (!1.. then ~01.. streaming)
+# Disabled 2026-10-31: trakt unsupported/invalid
+#trakt:
+#  client_id:                       # Enter Trakt Client ID (Optional)
+#  client_secret:                   # Enter Trakt Client Secret (Optional)
+#  authorization:
+#                                   # authorization section is autofilled by the script
+#    access_token:
+#    created_at:
+#    expires_in:
+#    refresh_token:
+#    scope: public
+#    token_type:
+mdblist:
+  apikey: <<mdblist_apikey>>
+  cache_expiration: 6     # short so weekly/monthly score refreshes fetch fresh averages

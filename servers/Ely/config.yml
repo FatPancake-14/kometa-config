@@ -1,0 +1,117 @@
+plex:                                # Can be individually specified per library as well; REQUIRED for the script to run
+  url: <<plex_url>>
+  token: <<plex_token>>
+  timeout: 60
+  db_cache: 40
+  clean_bundles: false
+  empty_trash: false
+  optimize: false
+  verify_ssl: true
+tmdb:                                           # REQUIRED for the script to run
+  apikey: <<tmdb_apikey>>
+  language: en
+  cache_expiration: 2   # vote counts for new titles change daily; default 60 left new shows ringless
+  region:
+libraries:
+  4k Movies:
+#    reset_overlays: plex
+    collection_files:
+    - file: config/movies_collections.yml
+    overlay_files:
+    - file: config/4k_overlays.yml
+  4k TV Shows:
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_collections.yml
+    overlay_files:
+    - file: config/4k_overlays.yml
+  Anime:
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_anime_collections.yml
+  TV Shows:
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_collections.yml
+  Kids TV:
+    remove_overlays: false
+    collection_files:
+    - file: config/tv_kids_collections.yml
+  Movies:
+    remove_overlays: false
+    collection_files:
+    - file: config/movies_collections.yml
+
+settings:
+  cache: true
+  cache_expiration: 60
+  asset_directory: config/assets
+  asset_folders: true
+  asset_depth: 0
+  create_asset_folders: false
+  prioritize_assets: false
+  dimensional_asset_rename: false
+  download_url_assets: false
+  show_missing_season_assets: false
+  show_missing_episode_assets: false
+  show_asset_not_needed: true
+  sync_mode: append
+  minimum_items: 1
+  default_collection_order:
+  delete_below_minimum: true
+  delete_not_scheduled: false
+  run_again_delay: 2
+  missing_only_released: false
+  only_filter_missing: false
+  show_unmanaged: true
+  show_unconfigured: true
+  show_filtered: false
+  show_options: false
+  show_missing: false
+  show_missing_assets: true
+  save_report: false
+  tvdb_language: eng
+  ignore_ids:
+  ignore_imdb_ids:
+  item_refresh_delay: 0
+  playlist_sync_to_users: all
+  playlist_exclude_users:
+  playlist_report: false
+  verify_ssl: true
+  custom_repo:
+  check_nightly: false
+  run_order:
+  - operations
+  - metadata
+  - collections
+  - overlays
+  overlay_artwork_filetype: jpg
+  overlay_artwork_quality: 90
+  show_unfiltered: false
+  auto_sort_hubs:
+# Disabled 2026-10-31: omdb unsupported/invalid
+#omdb:
+#  apikey: <<omdb_apikey>>
+#  cache_expiration: 60
+mdblist:
+  apikey: <<mdblist_apikey>>
+  cache_expiration: 60
+anidb:                                          # Not required for AniDB builders unless you want mature content
+  username:
+  password:
+  language: en
+  client:
+  enable_mature: false
+  cache_expiration: 60
+# Disabled 2026-10-31: trakt unsupported/invalid
+#trakt:
+#  client_id:                       # Enter Trakt Client ID (Optional)
+#  client_secret:                   # Enter Trakt Client Secret (Optional)
+#  authorization:
+#                                   # authorization section is autofilled by the script
+#    access_token:
+#    created_at:
+#    expires_in:
+#    refresh_token:
+#    scope: public
+#    token_type:

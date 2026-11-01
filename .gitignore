@@ -1,0 +1,12 @@
+# Never commit secrets or server state
+.env
+*.env
+!servers/.env.example
+backups/
+*.cache
+config.cache
+logs/
+overlays/*Original Posters/
+__pycache__/
+*.pyc
+.DS_Store

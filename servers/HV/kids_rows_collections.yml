@@ -1,0 +1,42 @@
+# Extra rows for the Kids libraries: by age rating, and what's top on Disney+.
+# Plex holds a mix of UK (BBFC) and US ratings here, so each age row includes the equivalent US ratings.
+collections:
+  All Ages (U):
+    smart_filter:
+      sort_by: random
+      limit: 50
+      any:
+        content_rating: ["gb/U", "gb/Uc", "gb/0+", "G", "TV-Y", "TV-G"]
+    sort_title: "!6_age_u"
+    summary: "Rated U (or the US equivalent): suitable for everyone. A different 50 every visit."
+    visible_home: true
+    visible_shared: true
+    visible_library: true
+
+  Parental Guidance (PG):
+    smart_filter:
+      sort_by: random
+      limit: 50
+      any:
+        content_rating: ["gb/PG", "PG", "TV-PG", "TV-Y7", "TV-Y7-FV"]
+    sort_title: "!7_age_pg"
+    summary: "Rated PG (or the US equivalent): fine for most children, some scenes may suit younger ones less."
+    visible_home: true
+    visible_shared: true
+    visible_library: true
+
+  Top on Disney+:
+    mdblist_streaming:
+      country: gb
+      period: weekly
+      provider: disney
+    collection_order: custom
+    sync_mode: sync
+    limit: 50
+    minimum_items: 5
+    delete_below_minimum: true
+    sort_title: "~03_Top on Disney+"
+    summary: "What's most watched on Disney+ in the UK this week, from this library."
+    visible_home: false
+    visible_shared: false
+    visible_library: true

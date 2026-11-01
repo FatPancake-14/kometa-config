@@ -1,0 +1,82 @@
+collections:
+  Trending TV Shows:
+    mdblist_list: https://mdblist.com/lists/rjp361/tv-trending
+    limit: 50
+    collection_order: custom
+    sync_mode: sync
+    visible_home: true
+    visible_library: true
+    visible_shared: true
+    sort_title: "!1_trending"
+    summary: TV Shows Trending across the internet
+    url_poster: https://theposterdb.com/api/assets/345270
+
+  Popular TV Shows:
+    mdblist_list: https://mdblist.com/lists/rjp361/populat-tv-shows
+    limit: 50
+    collection_order: custom
+    sync_mode: sync
+    visible_home: true
+    visible_library: true
+    visible_shared: true
+    sort_title: "!2_popular"
+    summary: Popular TV Shows across the internet
+    url_poster: https://theposterdb.com/api/assets/246305
+
+  Latest TV Shows:
+    tmdb_trending_daily: 200
+    filters:
+      first_episode_aired: 90
+    limit: 50
+    collection_order: custom
+    sync_mode: sync
+    visible_home: true
+    visible_library: true
+    visible_shared: true
+    sort_title: "!3_latest"
+    summary: The latest TV Show releases
+    url_poster: https://theposterdb.com/api/assets/253782
+
+  Top Rated TV Shows:
+    imdb_chart: top_shows
+    collection_order: custom
+    sync_mode: sync
+    visible_home: false
+    visible_library: true
+    visible_shared: false
+    sort_title: "!4_top_rated"
+    summary: The IMDB Top Rated TV Shows
+    url_poster: https://theposterdb.com/api/assets/248186
+
+  New Episodes:
+    smart_filter:
+      all:
+        episode_air_date: 7
+      sort_by: episode_added.desc
+      limit: 100
+    sort_title: "!5_new_episodes"
+    sync_mode: sync
+    url_poster: https://theposterdb.com/api/assets/345299
+    visible_home: false
+    visible_library: true
+    visible_shared: false
+
+  Reality TV:
+#    trakt_chart:
+#      chart: watched
+#      time_period: monthly
+#      limit: 1000
+#      genres:
+#        - reality
+#    filters:
+#      last_episode_aired: 21
+    mdblist_list: https://mdblist.com/lists/rjp361/trending-reality-tv
+    limit: 50
+    collection_order: custom
+    sync_mode: sync
+    visible_home: false
+    visible_library: true
+    visible_shared: false
+    sort_title: "!7_reality_tv"
+    summary: Keep up to date with the latest reality TV
+    url_poster: https://theposterdb.com/api/assets/374364

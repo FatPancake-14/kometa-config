@@ -1,0 +1,61 @@
+collections:
+  Trending Anime TV:
+    anilist_trending: 100
+    collection_order: custom.desc
+    limit: 30
+    sort_title: "!1_trending"
+    sync_mode: sync
+    url_poster: https://theposterdb.com/api/assets/345270
+    visible_home: true
+    visible_shared: true
+    visible_library: true
+
+  Popular Anime TV:
+    tmdb_popular: 1000
+    limit: 50
+    collection_order: custom
+    sync_mode: sync
+    visible_home: true
+    visible_library: true
+    visible_shared: true
+    sort_title: "!2_popular"
+    summary: Popular TV Shows across the internet
+    url_poster: https://theposterdb.com/api/assets/246305
+
+  Latest Anime TV:
+    tmdb_trending_daily: 1000
+    filters:
+      first_episode_aired: 365
+    limit: 50
+    collection_order: custom
+    sync_mode: sync
+    visible_home: true
+    visible_library: true
+    visible_shared: true
+    sort_title: "!3_latest"
+    summary: The latest TV Show releases
+    url_poster: https://theposterdb.com/api/assets/253782   
+
+  Top Rated Anime TV:
+    imdb_chart: top_shows
+    collection_order: custom
+    sync_mode: sync
+    visible_home: false
+    visible_library: true
+    visible_shared: false
+    sort_title: "!4_top_rated"
+    summary: The IMDB Top Rated TV Shows
+    url_poster: https://theposterdb.com/api/assets/248186
+
+  New Episodes Anime TV:
+    smart_filter:
+      all:
+        episode_air_date: 21
+      sort_by: episode_added.desc
+      limit: 100
+    sort_title: "!5_new_episodes"
+    sync_mode: sync
+    url_poster: https://theposterdb.com/api/assets/345299
+    visible_home: false
+    visible_library: true
+    visible_shared: false

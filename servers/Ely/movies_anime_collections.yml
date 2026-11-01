@@ -1,0 +1,61 @@
+collections:
+  Trending Anime Movies:
+    anilist_trending: 1000
+    collection_order: custom.desc
+    limit: 50
+    sort_title: "!1_trending"
+    sync_mode: sync
+    url_poster: https://theposterdb.com/api/assets/345270
+    visible_home: true
+    visible_shared: true
+    visible_library: true
+
+  Popular Anime Movies:
+    tmdb_popular: 1000
+    limit: 50
+    collection_order: custom
+    sync_mode: sync
+    visible_home: true
+    visible_library: true
+    visible_shared: true
+    sort_title: "!2_popular"
+    summary: Popular Anime movies across the internet
+    url_poster: https://theposterdb.com/api/assets/246305
+
+  Latest Anime Movies:
+    tmdb_trending_daily: 1000
+    filters:
+      release: 365
+    limit: 50
+    collection_order: custom
+    sync_mode: sync
+    visible_home: true
+    visible_library: true
+    visible_shared: true
+    sort_title: "!3_latest"
+    summary: The latest Anime movie releases
+    url_poster: https://theposterdb.com/api/assets/253782
+
+  Top Rated Anime Movies:
+    imdb_chart: top_movies
+    collection_order: custom
+    sync_mode: sync
+    visible_home: false
+    visible_library: true
+    visible_shared: false
+    sort_title: "!4_top_rated"
+    summary: The IMDB Top Rated movies
+    url_poster: https://theposterdb.com/api/assets/248186
+
+  Recently Released Anime Movies:
+    smart_filter:
+      all:
+        release: 365
+      sort_by: release.desc
+      limit: 30
+    sort_title: "!5_recently_released"
+    sync_mode: sync
+    url_poster: https://theposterdb.com/api/assets/345277
+    visible_home: false
+    visible_shared: true
+    visible_library: true
