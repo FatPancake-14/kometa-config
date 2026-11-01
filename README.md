@@ -58,7 +58,7 @@ Because a full pass is cheap, every score refreshes every night: no refresh tier
 It runs from cron at 03:30 under `flock`, and the Kometa run for the same server waits on the same lock, so overlays always see the night's scores:
 
 ```
-30 3 * * * /home/ubuntu/scores/run_scores.sh >> /home/ubuntu/scores/sync.log 2>&1
+30 3 * * * /home/ubuntu/kometa-scores/run_scores.sh >> /home/ubuntu/kometa-scores/logs/sync.log 2>&1
 0 4 * * *  flock -w 3600 /tmp/kometa-hv.lock docker run --rm ... kometateam/kometa --run
 ```
 
