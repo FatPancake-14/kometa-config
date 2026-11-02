@@ -142,7 +142,7 @@ Kometa fetches every matched title from Plex *before* it applies a row's `limit:
 
 **Kids rows** ([`kids_rows_collections.yml`](servers/HV/kids_rows_collections.yml)): All Ages (U) and Parental Guidance (PG), each matching both the UK and US ratings because Plex holds a mix of the two, plus Top on Disney+.
 
-Rows are ordered by sort title (`settings: auto_sort_hubs: sort_title`): `!1` Trending, `!2` Popular, `!3` Latest / Recently Released, `!4` Top Rated, then `!5`–`!6` for the remaining basics (New Episodes, Disney Classics, Reality TV), `!7_1`–`!7_2` for the kids rows, `!8_1`–`!8_4` for the score rows, and `~01`–`~11` for streaming.
+Rows are ordered by sort title by [`tools/sort_hubs.py`](tools/sort_hubs.py), run straight after Kometa each night. (Kometa's own `auto_sort_hubs` isn't used: it moves the rows above Plex's built-in ones, which pushes Continue Watching to the bottom of the Recommended tab.) The order: `!1` Trending, `!2` Popular, `!3` Latest / Recently Released, `!4` Top Rated, then `!5`–`!6` for the remaining basics (New Episodes, Disney Classics, Reality TV), `!7_1`–`!7_2` for the kids rows, `!8_1`–`!8_4` for the score rows, and `~01`–`~11` for streaming.
 
 Two gotchas found along the way:
 

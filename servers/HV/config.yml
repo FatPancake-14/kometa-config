@@ -207,7 +207,7 @@ settings:
   custom_repo:
   overlay_artwork_filetype: webp_lossy
   overlay_artwork_quality: 90
-  auto_sort_hubs: sort_title   # Recommended/Home rows ordered by sort title (!1.. then ~01.. streaming)
+  # auto_sort_hubs is off: it puts the rows above Continue Watching. kometa-tools/sort_hubs.py sorts them after the 04:00 run.
 # Disabled 2026-10-31: trakt unsupported/invalid
 #trakt:
 #  client_id:                       # Enter Trakt Client ID (Optional)
