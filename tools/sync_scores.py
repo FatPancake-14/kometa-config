@@ -18,14 +18,16 @@ Safety:
 - An average of 0 means MDBList has no ratings yet, so the title gets no score. (Kometa writes 0.0;
   those placeholders are cleared, and don't count towards the limit above.)
 
-Score rows (film libraries): after the scores, the script also picks today's films for the discovery rows
-(Rated 80+, Hidden Gems, Under 100 Minutes, Best Documentaries): 50 at random from every film that
-qualifies, the same all day and new each night. It tags them with a Plex label named after the row, and
-Kometa only shows the rows (config/score_rows_movies.yml: a smart collection per label).
-A library gets rows when its Kometa entry loads score_rows_movies.yml; `use_gems: false` or
-`use_docs: false` in that file's template_variables switches a row off there. The rules use the full
-MDBList record the scores come from (every site's score and vote count, runtime, genres), so they cost no
-extra requests. Filmed stage shows, concert films and stand-up specials are left out, using TMDb's tags.
+Score rows: after the scores, the script also picks today's selection for the discovery rows, 50 at random
+from everything that qualifies, the same all day and new each night:
+- films: Rated 80+, Hidden Gems, Under 100 Minutes, Best Documentaries (config/score_rows_movies.yml)
+- shows: Rated 80+, Hidden Gems, Binge-able (config/score_rows_tv.yml)
+It tags them with a Plex label named after the row, and Kometa only shows the rows (a smart collection per
+label). A library gets rows when its Kometa entry loads one of those files; `use_gems: false` or
+`use_docs: false` in its template_variables switches a row off there. The rules use the full MDBList
+record the scores come from (every site's score and vote count, runtime, genres, seasons), so they cost no
+extra requests. Filmed stage shows, concert films and stand-up specials are left out, using TMDb's tags,
+and so are documentary, reality, talk, news and game shows.
 
 usage: python3 sync_scores.py /path/to/config.yml "<Library>" ["<Library>" ...] [--dry] [--max-remove 2] [--rows-reset]
 Reads the plex url/token and the mdblist and tmdb apikeys from that config.yml.
@@ -96,8 +98,10 @@ def listing(key, kind, page=500):
 
 
 averages = {}  # ("movie", tmdb) / ("show", tvdb) -> "7.8" or None, shared across libraries
-facts = {}     # tmdb -> what the row rules need (films only)
-MAJOR = {"imdb": 1000, "letterboxd": 1000, "tomatoes": 20, "popcorn": 250, "metacritic": 7}  # min votes to count
+facts = {}     # ("movie", tmdb) / ("show", tvdb) -> what the row rules need
+MAJOR = {"imdb": 1000, "letterboxd": 1000, "tomatoes": 20, "popcorn": 250, "metacritic": 7}  # min votes to count (films)
+MAJOR_TV = {"imdb": 1000, "trakt": 100, "tmdb": 50, "tomatoes": 10, "metacritic": 5, "letterboxd": 500}  # (shows)
+NOT_SHOWS = {"documentary", "reality", "reality tv", "talk", "talk show", "news", "game show"}  # genres left out of the TV rows
 
 
 def film_facts(d):
@@ -116,6 +120,24 @@ def film_facts(d):
     }
 
 
+def show_facts(d):
+    s = {r["source"]: (r.get("score"), r.get("votes") or 0) for r in d.get("ratings") or [] if r.get("score") is not None}
+    genres = {(g.get("title") if isinstance(g, dict) else str(g)).lower() for g in d.get("genres") or []}
+    seasons = [x for x in d.get("seasons") or [] if (x.get("season_number") or 0) > 0]  # not Specials
+    return {
+        "avg": d.get("score_average") or 0,
+        "imdb_votes": s.get("imdb", (0, 0))[1],
+        "major": [sc for src, (sc, v) in s.items() if src in MAJOR_TV and v >= MAJOR_TV[src]],
+        "critics": s.get("tomatoes", (0, 0))[1] >= 10 or s.get("metacritic", (0, 0))[1] >= 5,  # reviewed by critics
+        "year": int(d.get("year") or 0),
+        "first_aired": str(d.get("released") or "")[:10],
+        "skip": bool(genres & NOT_SHOWS),
+        "ended": str(d.get("status") or "").lower() == "ended",  # finished as planned (not cancelled)
+        "seasons": len(seasons),
+        "episodes": sum(x.get("episode_count") or 0 for x in seasons),
+    }
+
+
 def fetch(kind, ids):
     provider, mtype = ("tmdb", "movie") if kind == "movie" else ("tvdb", "show")
     missing = [i for i in dict.fromkeys(ids) if (kind, i) not in averages]
@@ -130,8 +152,7 @@ def fetch(kind, ids):
             avg = d.get("score_average")
             if str(rid).isdigit():
                 got[int(rid)] = f"{avg * 0.1:.1f}" if isinstance(avg, (int, float)) and 0 < avg <= 100 else None
-                if kind == "movie":
-                    facts[int(rid)] = film_facts(d)
+                facts[(kind, int(rid))] = film_facts(d) if kind == "movie" else show_facts(d)
         for i in batch:
             averages[(kind, i)] = got.get(i)
         time.sleep(0.25)
@@ -145,10 +166,10 @@ def sync(lib, key, kind):
         ids = [g["id"][7:] for g in it.get("Guid", []) if g["id"].startswith(prefix)]
         if ids and ids[0].isdigit():
             cur = it.get("userRating")
-            have.append((it["ratingKey"], int(ids[0]), f"{float(cur):.1f}" if cur is not None else None))
-    fetch(kind, [i for _, i, _ in have])
+            have.append((it["ratingKey"], int(ids[0]), f"{float(cur):.1f}" if cur is not None else None, it.get("leafCount") or 0))
+    fetch(kind, [i for _, i, _, _ in have])
     sets, removes, zeros, same, none = {}, [], [], 0, 0
-    for rk, i, cur in have:
+    for rk, i, cur, _ in have:
         target = averages.get((kind, i))
         if target is None:
             none += 1
@@ -177,12 +198,12 @@ def sync(lib, key, kind):
             plex(f"/library/sections/{key}/all?{q}", "PUT")
     log(f"{'[dry] ' if DRY else ''}{lib}: {len(items)} titles, {len(have)} with an ID | set {n_set}, cleared {len(removes)}, "
         f"unchanged {same}, no MDBList average {none}{note}")
-    return [(rk, i) for rk, i, _ in have]
+    return [(rk, i, eps) for rk, i, _, eps in have]  # eps: episodes in the library (shows)
 
 
 # ---- Score rows ----------------------------------------------------------------------------------------
-ROW_FILE = "score_rows_movies.yml"
-ROW_MIN_YEAR = 1980  # the user's preference: no older films in these rows (unknown year counts as older)
+ROW_FILES = {"movie": "score_rows_movies.yml", "show": "score_rows_tv.yml"}
+ROW_MIN_YEAR = 1980  # the user's preference: nothing older in these rows (first aired, for shows; unknown counts as older)
 ROW_SIZE = 50        # today's selection per row: random from everything that qualifies, fixed for the day
 OLD_LABELS = ["Rated 80+ · Not Seen Yet", "Rated 80+, Not Seen Yet"]  # earlier row names; removed wherever found
 STATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state", "rows.json")  # pool sizes, for the guard
@@ -207,13 +228,34 @@ ROWS = {  # row (= Plex label = Kometa collection name): (switch in template_var
 }
 
 
-def row_settings(lib):
+YEAR_AGO = (datetime.date.today() - datetime.timedelta(days=365)).isoformat()
+TV_ROWS = {  # shows: Rated 80+ and Hidden Gems mirror the film rows; IMDb vote counts are lower for TV
+    "Rated 80+": (None, lambda f: f["avg"] >= 80 and f["imdb_votes"] >= 10000 and agree(f, 70)),
+    "Hidden Gems": ("use_gems", lambda f: f["avg"] >= 78 and 1000 <= f["imdb_votes"] < 15000 and agree(f, 65)
+                    and f["critics"] and f["first_aired"] and f["first_aired"] <= YEAR_AGO),  # a year in: early scores run high
+    "Binge-able": (None, lambda f: f["ended"] and 1 <= f["seasons"] <= 3 and f["avg"] >= 78 and f["imdb_votes"] >= 5000
+                   and agree(f, 65) and f["have"] >= 0.9 * f["episodes"]),  # the whole show is in the library
+}
+ROW_RULES = {"movie": ROWS, "show": TV_ROWS}
+
+
+def row_settings(lib, kind):
     """The rows a library should have, from its Kometa entry: None when it doesn't load the row file."""
     for entry in (cfg.get("libraries", {}).get(lib) or {}).get("collection_files") or []:
-        if isinstance(entry, dict) and str(entry.get("file", "")).endswith(ROW_FILE):
+        if isinstance(entry, dict) and str(entry.get("file", "")).endswith(ROW_FILES[kind]):
             tv = entry.get("template_variables") or {}
-            return {row for row, (switch, _) in ROWS.items() if switch is None or tv.get(switch, True) is not False}
+            return {row for row, (switch, _) in ROW_RULES[kind].items() if switch is None or tv.get(switch, True) is not False}
     return None
+
+
+def eligible(kind, i, eps):
+    """What the rules see for one title, or None when it can't be in any row."""
+    f = facts.get((kind, i))
+    if f is None or f["year"] < ROW_MIN_YEAR:
+        return None
+    if kind == "movie":
+        return None if i in not_films or f["stage"] else f
+    return None if f["skip"] else dict(f, have=eps)
 
 
 def load_not_films():
@@ -226,12 +268,12 @@ def load_not_films():
         page += 1
 
 
-def label_members(key, keys_by_title):
+def label_members(key, typ, keys_by_title):
     out = {}
     for title, lkey in keys_by_title.items():
         members, start = set(), 0
         while True:
-            got = json.loads(plex(f"/library/sections/{key}/all?type=1&label={lkey}"
+            got = json.loads(plex(f"/library/sections/{key}/all?type={typ}&label={lkey}"
                                   f"&X-Plex-Container-Start={start}&X-Plex-Container-Size=500"))["MediaContainer"].get("Metadata", [])
             members.update(m["ratingKey"] for m in got)
             start += len(got)
@@ -241,33 +283,34 @@ def label_members(key, keys_by_title):
     return out
 
 
-def edit_label(key, keys, label, remove=False):
+def edit_label(key, typ, keys, label, remove=False):
     for n in range(0, len(keys), 100):
         field = {"label[].tag.tag-": label} if remove else {"label[0].tag.tag": label}
-        q = urllib.parse.urlencode(dict({"type": 1, "id": ",".join(sorted(keys)[n:n + 100])}, **field))
+        q = urllib.parse.urlencode(dict({"type": typ, "id": ",".join(sorted(keys)[n:n + 100])}, **field))
         plex(f"/library/sections/{key}/all?{q}", "PUT")
 
 
-def rows(lib, key, films, wanted, pools):
+def rows(lib, key, kind, titles, wanted, pools):
+    typ = 1 if kind == "movie" else 2
+    rules = ROW_RULES[kind]
     labels = {d["title"].lower(): d["key"] for d in json.loads(plex(f"/library/sections/{key}/label"))["MediaContainer"].get("Directory", [])}
-    names = list(ROWS) + OLD_LABELS
-    current = label_members(key, {name: labels[name.lower()] for name in names if name.lower() in labels})
+    names = list(rules) + OLD_LABELS
+    current = label_members(key, typ, {name: labels[name.lower()] for name in names if name.lower() in labels})
+    seen = [(rk, f) for rk, f in ((rk, eligible(kind, i, eps)) for rk, i, eps in titles) if f is not None]
     today = datetime.date.today().isoformat()
-    shown = set()  # films already in an earlier row today: the rows avoid repeating each other
+    shown = set()  # titles already in an earlier row today: the rows avoid repeating each other
     out = []
     for row in names:
         pool = []
         if row in wanted:
-            rule = ROWS[row][1]
-            pool = sorted(rk for rk, i in films
-                          if i in facts and i not in not_films and not facts[i]["stage"]
-                          and facts[i]["year"] >= ROW_MIN_YEAR and rule(facts[i]))
+            rule = rules[row][1]
+            pool = sorted(rk for rk, f in seen if rule(f))
         have = current.get(row, set())
         last = pools.get(f"{lib}|{row}", 0)
         if row in wanted and not ROWS_RESET and last >= 40 and len(pool) < last / 2:  # a sudden collapse means bad data
-            out.append(f"{row} WARNING: pool shrank from {last} to {len(pool)}; today's films left as they were")
+            out.append(f"{row} WARNING: pool shrank from {last} to {len(pool)}; today's selection left as it was")
             continue
-        # Seeded by date, so a second run on the same day picks the same films. Films already in an earlier
+        # Seeded by date, so a second run on the same day picks the same titles. Titles already in an earlier
         # row today are only used when a row would otherwise come up short.
         rnd = random.Random(f"{today}|{lib}|{row}")
         fresh = [rk for rk in pool if rk not in shown]
@@ -278,8 +321,8 @@ def rows(lib, key, films, wanted, pools):
         shown |= target
         add, drop = target - have, have - target
         if not DRY:
-            edit_label(key, add, row)
-            edit_label(key, drop, row, remove=True)
+            edit_label(key, typ, add, row)
+            edit_label(key, typ, drop, row, remove=True)
         if row in wanted:
             pools[f"{lib}|{row}"] = len(pool)
             out.append(f"{row} {len(target)} of {len(pool)} (+{len(add)} -{len(drop)})")
@@ -301,22 +344,22 @@ def main():
         except Exception as e:
             failed.append(lib)
             log(f"{lib}: SKIPPED, no changes made: {e}")
-    with_rows = {lib: row_settings(lib) for lib in listed if sections[lib][1] == "movie"}
+    with_rows = {lib: row_settings(lib, sections[lib][1]) for lib in listed}
     with_rows = {lib: wanted for lib, wanted in with_rows.items() if wanted is not None}
-    if with_rows:
+    if any(sections[lib][1] == "movie" for lib in with_rows):
         try:
             load_not_films()
         except Exception as e:
             failed.append("score rows")
             log(f"score rows: SKIPPED, no changes made: TMDb: {e}")
-            with_rows = {}
+            with_rows = {lib: w for lib, w in with_rows.items() if sections[lib][1] != "movie"}
     try:
         pools = json.load(open(STATE))
     except (OSError, ValueError):
         pools = {}
     for lib, wanted in with_rows.items():
         try:
-            rows(lib, sections[lib][0], listed[lib], wanted, pools)
+            rows(lib, sections[lib][0], sections[lib][1], listed[lib], wanted, pools)
         except Exception as e:
             failed.append(f"{lib} rows")
             log(f"{lib} rows: SKIPPED: {e}")

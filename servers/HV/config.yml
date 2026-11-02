@@ -40,7 +40,9 @@ libraries:
     remove_overlays: false
     collection_files:
     - file: config/tv_collections.yml
-    - file: config/score_collections_tv.yml
+    - file: config/score_rows_tv.yml
+      template_variables:
+        home: true
     - file: config/streaming_collections.yml
       template_variables:
         discover_limit: 250
@@ -56,6 +58,7 @@ libraries:
     remove_overlays: false
     collection_files:
     - file: config/tv_collections.yml
+    - file: config/score_rows_tv.yml
     - file: config/streaming_collections.yml
       template_variables:
         discover_limit: 100

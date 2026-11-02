@@ -1,0 +1,43 @@
+# Score rows for TV libraries: Rated 80+, Hidden Gems, Binge-able.
+# tools/sync_scores.py picks today's selection each night: 50 at random from every show that passes the
+# row's rules (from MDBList: every site's score and vote count, status, seasons), the same all day. It tags
+# them with a Plex label named after the row, and each row here is a Plex smart collection on that label,
+# best score first. Documentary, reality, talk, news and game shows are left out, as is anything first
+# aired before 1980. (No "unwatched" filter: Plex works that out from the server owner's history, not the
+# viewer's.)
+#
+# template_variables (per library, in config.yml):
+#   home: true          also show the rows on Home (default: the library's Recommended tab only)
+#   use_gems: false     no Hidden Gems row in this library
+# sync_scores.py reads the same switches, so the labels and the rows always match.
+templates:
+  score row:
+    default:
+      home: false
+    smart_filter:
+      sort_by: user_rating.desc
+      all:
+        label: <<collection_name>>
+    visible_library: true
+    visible_home: <<home>>
+    visible_shared: <<home>>
+  gems switch:
+    default:
+      use_gems: true
+    run_definition: <<use_gems>>
+
+collections:
+  Rated 80+:
+    template: {name: score row}
+    sort_title: "!8_1_rated_80"
+    summary: "Today's 50: shows scored 80+ out of 100 by plenty of people, with critics and audiences in agreement. A new selection every day."
+
+  Hidden Gems:
+    template: [{name: score row}, {name: gems switch}]
+    sort_title: "!8_2_hidden_gems"
+    summary: "Today's selection: shows critics and viewers rate highly (78+), but not many people have found. A new selection every day."
+
+  Binge-able:
+    template: {name: score row}
+    sort_title: "!8_3_bingeable"
+    summary: "Today's selection of finished shows of one to three seasons, all here, scored 78+. Start one knowing it has an ending. A new selection every day."

@@ -120,7 +120,16 @@ A plain "score 80+" rule gave 1,600 films in a 37,000-film library, plenty of th
 
 **Why there's no "not watched yet" filter:** Plex works out a smart collection's *unwatched* filter from the **server owner's** watch history, not the viewer's. Shared users would see films they've already ticked, while films the owner had watched would vanish for everyone.
 
-**Score rows for TV** ([`score_collections_tv.yml`](servers/HV/score_collections_tv.yml)), in TV Shows 4K: Rated 80+ (score 80+), Hidden Gems (75+, 20–200 TMDb votes) and Binge-able (80+, ended, 1–3 seasons). Kometa labels what qualifies (`smart_label`), and each row shows 50 at random, reshuffled on every visit.
+**Score rows for TV** ([`score_rows_tv.yml`](servers/HV/score_rows_tv.yml)), in TV Shows 4K (on Home too) and TV Shows. The same script picks today's 50 shows the same way as the films, with rules adjusted for TV (fewer IMDb votes, no Letterboxd for most shows):
+
+| Row | Rule |
+|---|---|
+| Rated 80+ | average 80+, 10,000+ IMDb votes, and the sites agree: at least three of IMDb, Trakt, TMDb, RT critics, Metacritic and Letterboxd (each with enough votes to count), none below 70 |
+| Hidden Gems | average 78+, 1,000–15,000 IMDb votes, reviewed by critics (RT or Metacritic), first aired over a year ago (early scores run high), sites agree (none below 65) |
+| Binge-able | finished as planned (not cancelled), one to three seasons, all of it in the library, average 78+, 5,000+ IMDb votes, sites agree (none below 65) |
+
+- Documentary, reality, talk, news and game shows are left out.
+- Only shows first aired from 1980 onwards, as for films.
 
 **UK streaming rows** ([`streaming_collections.yml`](servers/HV/streaming_collections.yml)), in each library's Recommended tab only:
 
