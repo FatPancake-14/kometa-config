@@ -1,14 +1,15 @@
-# Score rows for TV libraries: Rated 80+, Hidden Gems, Binge-able.
+# Score rows for TV libraries: Rated 80+, Hidden Gems, Binge-able, Best Documentaries.
 # tools/sync_scores.py picks today's selection each night: 50 at random from every show that passes the
 # row's rules (from MDBList: every site's score and vote count, status, seasons), the same all day. It tags
 # them with a Plex label named after the row, and each row here is a Plex smart collection on that label,
-# best score first. Documentary, reality, talk, news and game shows are left out, as is anything first
-# aired before 1980. (No "unwatched" filter: Plex works that out from the server owner's history, not the
+# best score first. Reality, talk, news and game shows are left out, as is anything first aired before
+# 2000. Documentaries only appear in their own row. (No "unwatched" filter: Plex works that out from the server owner's history, not the
 # viewer's.)
 #
 # template_variables (per library, in config.yml):
 #   home: true          also show the rows on Home (default: the library's Recommended tab only)
 #   use_gems: false     no Hidden Gems row in this library
+#   use_docs: false     no Best Documentaries row in this library
 # sync_scores.py reads the same switches, so the labels and the rows always match.
 templates:
   score row:
@@ -25,12 +26,16 @@ templates:
     default:
       use_gems: true
     run_definition: <<use_gems>>
+  docs switch:
+    default:
+      use_docs: true
+    run_definition: <<use_docs>>
 
 collections:
   Rated 80+:
     template: {name: score row}
     sort_title: "!8_1_rated_80"
-    summary: "Today's 50: shows scored 80+ out of 100 by plenty of people, with critics and audiences in agreement. A new selection every day."
+    summary: "Today's 50: shows scored 80+ out of 100 by 20,000+ people, with critics and audiences in agreement. A new selection every day."
 
   Hidden Gems:
     template: [{name: score row}, {name: gems switch}]
@@ -40,4 +45,9 @@ collections:
   Binge-able:
     template: {name: score row}
     sort_title: "!8_3_bingeable"
-    summary: "Today's selection of finished shows of one to three seasons, all here, scored 78+. Start one knowing it has an ending. A new selection every day."
+    summary: "Today's selection of finished shows of one to three seasons, all here, scored 75+. Start one knowing it has an ending. A new selection every day."
+
+  Best Documentaries:
+    template: [{name: score row}, {name: docs switch}]
+    sort_title: "!8_4_documentaries"
+    summary: "Today's selection of the best-rated documentary series (80+). A new selection every day."

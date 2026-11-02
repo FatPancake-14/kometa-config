@@ -21,13 +21,13 @@ Safety:
 Score rows: after the scores, the script also picks today's selection for the discovery rows, 50 at random
 from everything that qualifies, the same all day and new each night:
 - films: Rated 80+, Hidden Gems, Under 100 Minutes, Best Documentaries (config/score_rows_movies.yml)
-- shows: Rated 80+, Hidden Gems, Binge-able (config/score_rows_tv.yml)
+- shows: Rated 80+, Hidden Gems, Binge-able, Best Documentaries (config/score_rows_tv.yml)
 It tags them with a Plex label named after the row, and Kometa only shows the rows (a smart collection per
 label). A library gets rows when its Kometa entry loads one of those files; `use_gems: false` or
 `use_docs: false` in its template_variables switches a row off there. The rules use the full MDBList
 record the scores come from (every site's score and vote count, runtime, genres, seasons), so they cost no
 extra requests. Filmed stage shows, concert films and stand-up specials are left out, using TMDb's tags,
-and so are documentary, reality, talk, news and game shows.
+and so are reality, talk, news and game shows. Documentaries only appear in their own row.
 
 usage: python3 sync_scores.py /path/to/config.yml "<Library>" ["<Library>" ...] [--dry] [--max-remove 2] [--rows-reset]
 Reads the plex url/token and the mdblist and tmdb apikeys from that config.yml.
@@ -101,7 +101,7 @@ averages = {}  # ("movie", tmdb) / ("show", tvdb) -> "7.8" or None, shared acros
 facts = {}     # ("movie", tmdb) / ("show", tvdb) -> what the row rules need
 MAJOR = {"imdb": 1000, "letterboxd": 1000, "tomatoes": 20, "popcorn": 250, "metacritic": 7}  # min votes to count (films)
 MAJOR_TV = {"imdb": 1000, "trakt": 100, "tmdb": 50, "tomatoes": 10, "metacritic": 5, "letterboxd": 500}  # (shows)
-NOT_SHOWS = {"documentary", "reality", "reality tv", "talk", "talk show", "news", "game show"}  # genres left out of the TV rows
+NOT_SHOWS = {"reality", "reality tv", "talk", "talk show", "news", "game show"}  # genres left out of the TV rows
 
 
 def film_facts(d):
@@ -132,6 +132,7 @@ def show_facts(d):
         "year": int(d.get("year") or 0),
         "first_aired": str(d.get("released") or "")[:10],
         "skip": bool(genres & NOT_SHOWS),
+        "doc": "documentary" in genres,
         "ended": str(d.get("status") or "").lower() == "ended",  # finished as planned (not cancelled)
         "seasons": len(seasons),
         "episodes": sum(x.get("episode_count") or 0 for x in seasons),
@@ -203,7 +204,8 @@ def sync(lib, key, kind):
 
 # ---- Score rows ----------------------------------------------------------------------------------------
 ROW_FILES = {"movie": "score_rows_movies.yml", "show": "score_rows_tv.yml"}
-ROW_MIN_YEAR = 1980  # the user's preference: nothing older in these rows (first aired, for shows; unknown counts as older)
+ROW_MIN_YEAR = 1980         # the user's preference: no films older than this in the rows (unknown year counts as older)
+TV_FIRST_AIRED = "2000-01-01"  # and no shows first aired before this
 ROW_SIZE = 50        # today's selection per row: random from everything that qualifies, fixed for the day
 OLD_LABELS = ["Rated 80+ · Not Seen Yet", "Rated 80+, Not Seen Yet"]  # earlier row names; removed wherever found
 STATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state", "rows.json")  # pool sizes, for the guard
@@ -229,12 +231,13 @@ ROWS = {  # row (= Plex label = Kometa collection name): (switch in template_var
 
 
 YEAR_AGO = (datetime.date.today() - datetime.timedelta(days=365)).isoformat()
-TV_ROWS = {  # shows: Rated 80+ and Hidden Gems mirror the film rows; IMDb vote counts are lower for TV
-    "Rated 80+": (None, lambda f: f["avg"] >= 80 and f["imdb_votes"] >= 10000 and agree(f, 70)),
-    "Hidden Gems": ("use_gems", lambda f: f["avg"] >= 78 and 1000 <= f["imdb_votes"] < 15000 and agree(f, 65)
-                    and f["critics"] and f["first_aired"] and f["first_aired"] <= YEAR_AGO),  # a year in: early scores run high
-    "Binge-able": (None, lambda f: f["ended"] and 1 <= f["seasons"] <= 3 and f["avg"] >= 78 and f["imdb_votes"] >= 5000
-                   and agree(f, 65) and f["have"] >= 0.9 * f["episodes"]),  # the whole show is in the library
+TV_ROWS = {  # shows: like the film rows, with fewer IMDb votes. Rated 80+ starts where Hidden Gems stops (20,000)
+    "Rated 80+": (None, lambda f: not f["doc"] and f["avg"] >= 80 and f["imdb_votes"] >= 20000 and agree(f, 70)),
+    "Hidden Gems": ("use_gems", lambda f: not f["doc"] and f["avg"] >= 78 and 1000 <= f["imdb_votes"] < 20000 and agree(f, 65)
+                    and f["critics"] and f["first_aired"] <= YEAR_AGO),  # a year in: early scores run high
+    "Binge-able": (None, lambda f: not f["doc"] and f["ended"] and 1 <= f["seasons"] <= 3 and f["avg"] >= 75
+                   and f["imdb_votes"] >= 5000 and agree(f, 62) and f["have"] >= 0.9 * f["episodes"]),  # the whole show is here
+    "Best Documentaries": ("use_docs", lambda f: f["doc"] and f["avg"] >= 80 and f["imdb_votes"] >= 2000 and agree(f, 70)),
 }
 ROW_RULES = {"movie": ROWS, "show": TV_ROWS}
 
@@ -251,11 +254,12 @@ def row_settings(lib, kind):
 def eligible(kind, i, eps):
     """What the rules see for one title, or None when it can't be in any row."""
     f = facts.get((kind, i))
-    if f is None or f["year"] < ROW_MIN_YEAR:
+    if f is None:
         return None
     if kind == "movie":
-        return None if i in not_films or f["stage"] else f
-    return None if f["skip"] else dict(f, have=eps)
+        return None if f["year"] < ROW_MIN_YEAR or i in not_films or f["stage"] else f
+    aired = f["first_aired"] or (f"{f['year']}-12-31" if f["year"] else "")  # no date: go by the year
+    return None if f["skip"] or aired < TV_FIRST_AIRED else dict(f, have=eps)
 
 
 def load_not_films():
