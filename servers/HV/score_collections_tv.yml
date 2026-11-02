@@ -1,14 +1,14 @@
 # Discovery rows for TV, built from the MDBList score (stored in Plex's user rating, 0-10, so 8.0 = 80).
-# Kometa labels what qualifies (smart_label), the row is a smart collection on that label,
-# unwatched by the viewer, 50 at random.
+# Kometa labels what qualifies (smart_label), the row is a smart collection on that label, 50 at random,
+# reshuffled on every visit. (No "unwatched" filter: Plex works that out from the server owner's history,
+# not the viewer's.)
 collections:
-  Rated 80+ · Not Seen Yet:
+  Rated 80+:
     smart_label:
       sort_by: random
       limit: 50
       all:
         label: <<smart_label>>
-        unplayed_episodes: true   # Plex has no 'unplayed' for shows; this means the viewer hasn't finished it
     sync_mode: sync
     visible_home: true
     visible_shared: true
@@ -19,7 +19,7 @@ collections:
     filters:
       tmdb_vote_count.gte: 20
     sort_title: "!8_1_rated_80"
-    summary: "Shows scored 80 or more out of 100 that you haven't finished. A different 50 every visit."
+    summary: "Shows scored 80 or more out of 100. A different 50 every visit."
 
   Hidden Gems:
     smart_label:
@@ -27,7 +27,6 @@ collections:
       limit: 50
       all:
         label: <<smart_label>>
-        unplayed_episodes: true   # Plex has no 'unplayed' for shows; this means the viewer hasn't finished it
     sync_mode: sync
     visible_home: true
     visible_shared: true
@@ -47,7 +46,6 @@ collections:
       limit: 50
       all:
         label: <<smart_label>>
-        unplayed_episodes: true   # Plex has no 'unplayed' for shows; this means the viewer hasn't finished it
     sync_mode: sync
     visible_home: true
     visible_shared: true

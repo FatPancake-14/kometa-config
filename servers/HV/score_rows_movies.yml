@@ -1,8 +1,8 @@
 # Score rows for film libraries: Rated 80+, Hidden Gems, Under 100 Minutes, Best Documentaries.
-# tools/sync_scores.py picks the films each night (from MDBList: every site's score and vote count) and tags
-# them with a Plex label named after the row, the best 300 at most. Each row here is a Plex smart collection
-# on that label that leaves out what the viewer has already watched (worked out per viewer) and shows 50
-# at random, so it reshuffles on every visit.
+# tools/sync_scores.py picks today's selection each night: 50 at random from every film that passes the
+# row's rules (from MDBList: every site's score and vote count), the same all day. It tags them with a Plex
+# label named after the row, and each row here is a Plex smart collection on that label, best score first.
+# (No "unwatched" filter: Plex works that out from the server owner's history, not the viewer's.)
 #
 # template_variables (per library, in config.yml):
 #   home: true          also show the rows on Home (default: the library's Recommended tab only)
@@ -14,11 +14,9 @@ templates:
     default:
       home: false
     smart_filter:
-      sort_by: random
-      limit: 50
+      sort_by: user_rating.desc
       all:
         label: <<collection_name>>
-        unplayed: true
     visible_library: true
     visible_home: <<home>>
     visible_shared: <<home>>
@@ -32,22 +30,22 @@ templates:
     run_definition: <<use_docs>>
 
 collections:
-  Rated 80+ · Not Seen Yet:
+  Rated 80+:
     template: {name: score row}
     sort_title: "!8_1_rated_80"
-    summary: "Scored 80+ out of 100 by enough people, with critics and audiences in agreement, and you haven't seen them yet. A different 50 every visit."
+    summary: "Today's 50: films scored 80+ out of 100 by enough people, with critics and audiences in agreement. A new selection every day."
 
   Hidden Gems:
     template: [{name: score row}, {name: gems switch}]
     sort_title: "!8_2_hidden_gems"
-    summary: "Loved by the people who've seen them (78+), but not many have. A different 50 every visit."
+    summary: "Today's selection: loved by the people who've seen them (78+), but not many have. A new selection every day."
 
   Under 100 Minutes:
     template: {name: score row}
     sort_title: "!8_3_under_100"
-    summary: "Well-rated films (75+) that run 75 to 99 minutes, for when you don't want a long one."
+    summary: "Today's selection of well-rated films (75+) that run 75 to 99 minutes, for when you don't want a long one. A new selection every day."
 
   Best Documentaries:
     template: [{name: score row}, {name: docs switch}]
     sort_title: "!8_4_documentaries"
-    summary: "The best-rated documentaries (80+) you haven't seen yet. A different 50 every visit."
+    summary: "Today's selection of the best-rated documentaries (80+). A new selection every day."

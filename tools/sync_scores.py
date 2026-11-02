@@ -18,9 +18,10 @@ Safety:
 - An average of 0 means MDBList has no ratings yet, so the title gets no score. (Kometa writes 0.0;
   those placeholders are cleared, and don't count towards the limit above.)
 
-Score rows (film libraries): after the scores, the script also picks the films for the discovery rows
-(Rated 80+, Hidden Gems, Under 100 Minutes, Best Documentaries) and tags them with a Plex label named
-after the row. Kometa only shows the rows (config/score_rows_movies.yml: a smart collection per label).
+Score rows (film libraries): after the scores, the script also picks today's films for the discovery rows
+(Rated 80+, Hidden Gems, Under 100 Minutes, Best Documentaries): 50 at random from every film that
+qualifies, the same all day and new each night. It tags them with a Plex label named after the row, and
+Kometa only shows the rows (config/score_rows_movies.yml: a smart collection per label).
 A library gets rows when its Kometa entry loads score_rows_movies.yml; `use_gems: false` or
 `use_docs: false` in that file's template_variables switches a row off there. The rules use the full
 MDBList record the scores come from (every site's score and vote count, runtime, genres), so they cost no
@@ -29,7 +30,10 @@ extra requests. Filmed stage shows, concert films and stand-up specials are left
 usage: python3 sync_scores.py /path/to/config.yml "<Library>" ["<Library>" ...] [--dry] [--max-remove 2] [--rows-reset]
 Reads the plex url/token and the mdblist and tmdb apikeys from that config.yml.
 """
+import datetime
 import json
+import os
+import random
 import sys
 import time
 import urllib.parse
@@ -41,7 +45,7 @@ args = [a for a in sys.argv[1:] if not a.startswith("--")]
 if len(args) < 2:
     sys.exit(__doc__)
 DRY = "--dry" in sys.argv
-ROWS_RESET = "--rows-reset" in sys.argv  # allow the score rows to shrink a lot in one go (after changing the rules)
+ROWS_RESET = "--rows-reset" in sys.argv  # allow a row's pool to shrink a lot in one go (after changing the rules)
 MAX_REMOVE_PCT = float(sys.argv[sys.argv.index("--max-remove") + 1]) if "--max-remove" in sys.argv else 2.0
 if "--max-remove" in sys.argv:
     args.remove(sys.argv[sys.argv.index("--max-remove") + 1])
@@ -108,6 +112,7 @@ def film_facts(d):
         "runtime": d.get("runtime") or 0,
         "year": int(d.get("year") or 0),
         "doc": "documentary" in genres,
+        "stage": str(d.get("title") or "").lower().endswith(": the musical"),  # filmed stage shows TMDb hasn't tagged
     }
 
 
@@ -178,7 +183,9 @@ def sync(lib, key, kind):
 # ---- Score rows ----------------------------------------------------------------------------------------
 ROW_FILE = "score_rows_movies.yml"
 ROW_MIN_YEAR = 1980  # the user's preference: no older films in these rows (unknown year counts as older)
-ROW_CAP = 300  # most films a row holds per library (the best by score); viewers see a random 50 unwatched
+ROW_SIZE = 50        # today's selection per row: random from everything that qualifies, fixed for the day
+OLD_LABELS = ["Rated 80+ · Not Seen Yet", "Rated 80+, Not Seen Yet"]  # earlier row names; removed wherever found
+STATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state", "rows.json")  # pool sizes, for the guard
 # TMDb tags for things that aren't films: filmed theater, filmed play, musical proshot, concert film, stand-up comedy
 NOT_FILMS_KEYWORDS = "246884|229756|334841|156205|9716"
 not_films = set()
@@ -189,7 +196,7 @@ def agree(f, floor):  # at least three sites with enough votes, and none of them
 
 
 ROWS = {  # row (= Plex label = Kometa collection name): (switch in template_variables, rule). 60+ minutes keeps out shorts and TV specials
-    "Rated 80+ · Not Seen Yet": (None, lambda f: not f["doc"] and f["avg"] >= 80 and f["imdb_votes"] >= 25000
+    "Rated 80+": (None, lambda f: not f["doc"] and f["avg"] >= 80 and f["imdb_votes"] >= 25000
                                  and f["runtime"] >= 60 and agree(f, 70)),
     "Hidden Gems": ("use_gems", lambda f: not f["doc"] and f["avg"] >= 78 and 2000 <= f["imdb_votes"] <= 25000
                     and f["lb"] >= 74 and f["runtime"] >= 70 and agree(f, 65)),
@@ -241,26 +248,43 @@ def edit_label(key, keys, label, remove=False):
         plex(f"/library/sections/{key}/all?{q}", "PUT")
 
 
-def rows(lib, key, films, wanted):
+def rows(lib, key, films, wanted, pools):
     labels = {d["title"].lower(): d["key"] for d in json.loads(plex(f"/library/sections/{key}/label"))["MediaContainer"].get("Directory", [])}
-    current = label_members(key, {row: labels[row.lower()] for row in ROWS if row.lower() in labels})
+    names = list(ROWS) + OLD_LABELS
+    current = label_members(key, {name: labels[name.lower()] for name in names if name.lower() in labels})
+    today = datetime.date.today().isoformat()
+    shown = set()  # films already in an earlier row today: the rows avoid repeating each other
     out = []
-    for row, (_, rule) in ROWS.items():
-        picked = []
+    for row in names:
+        pool = []
         if row in wanted:
-            picked = [(facts[i]["avg"], facts[i]["imdb_votes"], rk) for rk, i in films
-                      if i in facts and i not in not_films and facts[i]["year"] >= ROW_MIN_YEAR and rule(facts[i])]
-        target = {rk for _, _, rk in sorted(picked, reverse=True)[:ROW_CAP]}
+            rule = ROWS[row][1]
+            pool = sorted(rk for rk, i in films
+                          if i in facts and i not in not_films and not facts[i]["stage"]
+                          and facts[i]["year"] >= ROW_MIN_YEAR and rule(facts[i]))
         have = current.get(row, set())
-        add, drop = target - have, have - target
-        if row in wanted and not ROWS_RESET and len(have) >= 20 and len(target) < len(have) / 2:  # a sudden collapse means bad data
-            out.append(f"{row} WARNING: would shrink from {len(have)} to {len(target)}; left as is")
+        last = pools.get(f"{lib}|{row}", 0)
+        if row in wanted and not ROWS_RESET and last >= 40 and len(pool) < last / 2:  # a sudden collapse means bad data
+            out.append(f"{row} WARNING: pool shrank from {last} to {len(pool)}; today's films left as they were")
             continue
+        # Seeded by date, so a second run on the same day picks the same films. Films already in an earlier
+        # row today are only used when a row would otherwise come up short.
+        rnd = random.Random(f"{today}|{lib}|{row}")
+        fresh = [rk for rk in pool if rk not in shown]
+        target = set(rnd.sample(fresh, min(ROW_SIZE, len(fresh))))
+        if len(target) < ROW_SIZE:
+            rest = [rk for rk in pool if rk in shown]
+            target |= set(rnd.sample(rest, min(ROW_SIZE - len(target), len(rest))))
+        shown |= target
+        add, drop = target - have, have - target
         if not DRY:
             edit_label(key, add, row)
             edit_label(key, drop, row, remove=True)
-        if row in wanted or have:
-            out.append(f"{row} {len(target)} (+{len(add)} -{len(drop)})")
+        if row in wanted:
+            pools[f"{lib}|{row}"] = len(pool)
+            out.append(f"{row} {len(target)} of {len(pool)} (+{len(add)} -{len(drop)})")
+        elif have:
+            out.append(f"{row} removed from {len(drop)}")
     log(f"{'[dry] ' if DRY else ''}{lib} rows: " + ", ".join(out))
 
 
@@ -286,12 +310,19 @@ def main():
             failed.append("score rows")
             log(f"score rows: SKIPPED, no changes made: TMDb: {e}")
             with_rows = {}
+    try:
+        pools = json.load(open(STATE))
+    except (OSError, ValueError):
+        pools = {}
     for lib, wanted in with_rows.items():
         try:
-            rows(lib, sections[lib][0], listed[lib], wanted)
+            rows(lib, sections[lib][0], listed[lib], wanted, pools)
         except Exception as e:
             failed.append(f"{lib} rows")
             log(f"{lib} rows: SKIPPED: {e}")
+    if with_rows and not DRY:
+        os.makedirs(os.path.dirname(STATE), exist_ok=True)
+        json.dump(pools, open(STATE, "w"), indent=1, sort_keys=True)
     log(f"done in {time.time() - start:.0f}s{', FAILED: ' + ', '.join(failed) if failed else ''}")
     sys.exit(1 if failed else 0)
 

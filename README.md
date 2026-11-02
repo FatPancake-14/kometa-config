@@ -103,19 +103,24 @@ A plain "score 80+" rule gave 1,600 films in a 37,000-film library, plenty of th
 
 | Row | Rule |
 |---|---|
-| Rated 80+ · Not Seen Yet | average 80+, 25,000+ IMDb votes, 60+ minutes, and the sites agree: at least three of IMDb, Letterboxd, RT critics, RT audience and Metacritic (each with enough votes to count), none below 70 |
+| Rated 80+ | average 80+, 25,000+ IMDb votes, 60+ minutes, and the sites agree: at least three of IMDb, Letterboxd, RT critics, RT audience and Metacritic (each with enough votes to count), none below 70 |
 | Hidden Gems | average 78+, 2,000–25,000 IMDb votes, Letterboxd 3.7+, 70+ minutes, sites agree (none below 65) |
 | Under 100 Minutes | average 75+, 75–99 minutes, 10,000+ IMDb votes, sites agree (none below 65) |
 | Best Documentaries | documentaries only: average 80+, 5,000+ IMDb votes, 60+ minutes, sites agree (none below 70) |
 
 - Documentaries only appear in their own row.
-- Filmed stage shows, concert films and stand-up specials are left out of all four, using TMDb's tags (*filmed theater*, *filmed play*, *musical proshot*, *concert film*, *stand-up comedy*).
+- Filmed stage shows, concert films and stand-up specials are left out of all four, using TMDb's tags (*filmed theater*, *filmed play*, *musical proshot*, *concert film*, *stand-up comedy*), plus titles ending in ": The Musical" for stage shows TMDb hasn't tagged.
 - Only films from 1980 onwards (`ROW_MIN_YEAR`), a personal preference.
-- Each row keeps the best 300 by score.
+- A library's rows avoid showing the same film on the same day.
 
-The script tags the picks with a Plex label named after the row, with one batch edit per 100 films (fast even through a slow proxy). Each row is a Plex smart collection on that label that drops what *the viewer* has already watched and shows 50 at random, so it reshuffles on every visit. A library gets the rows by loading the file; `use_gems: false` / `use_docs: false` in its `template_variables` switch a row off, and the script reads the same switches. If a row would suddenly shrink by more than half (a sign of bad data), it is left as is; `--rows-reset` allows it once after a rule change.
+**Today's selection.** Each night the script picks 50 at random from *every* film that passes a row's rules, and tags them with a Plex label named after the row. One batch edit per 100 films keeps this fast even through a slow proxy. Each row is a Plex smart collection on that label, best score first. It stays the same all day, so you can come back to something you spotted earlier, and the pick is seeded by the date, so a second run on the same day changes nothing.
 
-**Score rows for TV** ([`score_collections_tv.yml`](servers/HV/score_collections_tv.yml)), in TV Shows 4K: Rated 80+ · Not Seen Yet (score 80+), Hidden Gems (75+, 20–200 TMDb votes) and Binge-able (80+, ended, 1–3 seasons). Kometa labels what qualifies (`smart_label`), and each row works the same way as above.
+- **Switching rows off:** a library gets the rows by loading the file. `use_gems: false` / `use_docs: false` in its `template_variables` switch a row off, and the script reads the same switches.
+- **Safety:** if a row's pool suddenly shrinks by more than half (a sign of bad data), yesterday's films are kept. `--rows-reset` allows it once after a rule change.
+
+**Why there's no "not watched yet" filter:** Plex works out a smart collection's *unwatched* filter from the **server owner's** watch history, not the viewer's. Shared users would see films they've already ticked, while films the owner had watched would vanish for everyone.
+
+**Score rows for TV** ([`score_collections_tv.yml`](servers/HV/score_collections_tv.yml)), in TV Shows 4K: Rated 80+ (score 80+), Hidden Gems (75+, 20–200 TMDb votes) and Binge-able (80+, ended, 1–3 seasons). Kometa labels what qualifies (`smart_label`), and each row shows 50 at random, reshuffled on every visit.
 
 **UK streaming rows** ([`streaming_collections.yml`](servers/HV/streaming_collections.yml)), in each library's Recommended tab only:
 
