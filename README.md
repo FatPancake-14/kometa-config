@@ -110,6 +110,7 @@ A plain "score 80+" rule gave 1,600 films in a 37,000-film library, plenty of th
 
 - Documentaries only appear in their own row.
 - Filmed stage shows, concert films and stand-up specials are left out of all four, using TMDb's tags (*filmed theater*, *filmed play*, *musical proshot*, *concert film*, *stand-up comedy*).
+- Only films from 1980 onwards (`ROW_MIN_YEAR`), a personal preference.
 - Each row keeps the best 300 by score.
 
 The script tags the picks with a Plex label named after the row, with one batch edit per 100 films (fast even through a slow proxy). Each row is a Plex smart collection on that label that drops what *the viewer* has already watched and shows 50 at random, so it reshuffles on every visit. A library gets the rows by loading the file; `use_gems: false` / `use_docs: false` in its `template_variables` switch a row off, and the script reads the same switches. If a row would suddenly shrink by more than half (a sign of bad data), it is left as is; `--rows-reset` allows it once after a rule change.

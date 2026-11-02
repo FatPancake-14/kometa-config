@@ -106,6 +106,7 @@ def film_facts(d):
         "lb": lb[0] if lb[1] >= 500 else 0,
         "major": [sc for src, (sc, v) in s.items() if src in MAJOR and v >= MAJOR[src]],
         "runtime": d.get("runtime") or 0,
+        "year": int(d.get("year") or 0),
         "doc": "documentary" in genres,
     }
 
@@ -176,6 +177,7 @@ def sync(lib, key, kind):
 
 # ---- Score rows ----------------------------------------------------------------------------------------
 ROW_FILE = "score_rows_movies.yml"
+ROW_MIN_YEAR = 1980  # the user's preference: no older films in these rows (unknown year counts as older)
 ROW_CAP = 300  # most films a row holds per library (the best by score); viewers see a random 50 unwatched
 # TMDb tags for things that aren't films: filmed theater, filmed play, musical proshot, concert film, stand-up comedy
 NOT_FILMS_KEYWORDS = "246884|229756|334841|156205|9716"
@@ -247,7 +249,7 @@ def rows(lib, key, films, wanted):
         picked = []
         if row in wanted:
             picked = [(facts[i]["avg"], facts[i]["imdb_votes"], rk) for rk, i in films
-                      if i in facts and i not in not_films and rule(facts[i])]
+                      if i in facts and i not in not_films and facts[i]["year"] >= ROW_MIN_YEAR and rule(facts[i])]
         target = {rk for _, _, rk in sorted(picked, reverse=True)[:ROW_CAP]}
         have = current.get(row, set())
         add, drop = target - have, have - target
