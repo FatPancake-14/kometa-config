@@ -20,7 +20,7 @@ collections:
         user_rating.gte: 7.95
     filters:
       tmdb_vote_count.gte: 20
-    sort_title: "!6_rated_80"
+    sort_title: "!8_1_rated_80"
     summary: "Scored 80 or more out of 100, and you haven't watched them yet. A different 50 every visit."
 
   Hidden Gems:
@@ -40,7 +40,7 @@ collections:
     filters:
       tmdb_vote_count.gte: 20
       tmdb_vote_count.lte: 200
-    sort_title: "!7_hidden_gems"
+    sort_title: "!8_2_hidden_gems"
     summary: "Scored 75 or more, but few people have rated them yet. A different 50 every visit."
 
   Under 100 Minutes:
@@ -60,5 +60,5 @@ collections:
         duration.lt: 100
     filters:
       tmdb_vote_count.gte: 20
-    sort_title: "!8_under_100"
+    sort_title: "!8_3_under_100"
     summary: "Well-rated films (70+) that are under 100 minutes, for when you don't want a long one."

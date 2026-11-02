@@ -82,7 +82,9 @@ A poster is only redrawn when its score band or number changes. An older title w
 
 **Set `tmdb: cache_expiration`.** It defaults to 60 days. Kometa caches each title's TMDb vote count the first time it sees it. A show first seen before it aired is stored with 0 votes, so it fails the 20-vote rule for up to two months, however popular it becomes. Here it's 2 days, which costs only a few hundred free TMDb lookups a night.
 
-Each 4K library has an extra `<Library> Overlays` entry pointing at the same Plex library with `library_name:` and `run_order: [overlays]` (see [`servers/HV/config.yml`](servers/HV/config.yml)). That lets the main entry keep running collections in full every night while the overlays run on the tiers. Showing rings in another library later only needs another Overlays entry, since every library already has scores.
+Each 4K library has an extra `<Library> Overlays` entry pointing at the same Plex library with `library_name:` and `settings: run_order: [overlays]` (see [`servers/HV/config.yml`](servers/HV/config.yml)). That lets the main entry keep running collections in full every night while the overlays run on the tiers. Showing rings in another library later only needs another Overlays entry, since every library already has scores.
+
+**Put an entry's `run_order` under `settings:`.** Written directly under the entry, Kometa silently ignores it and runs the full default order. An entry with no collection files then still runs a collections step, and that step re-sorts the library's Recommended rows without knowing any sort titles, so they end up alphabetical.
 
 Two things to know if you copy this pattern:
 
@@ -116,7 +118,7 @@ Kometa fetches every matched title from Plex *before* it applies a row's `limit:
 
 **Kids rows** ([`kids_rows_collections.yml`](servers/HV/kids_rows_collections.yml)): All Ages (U) and Parental Guidance (PG), each matching both the UK and US ratings because Plex holds a mix of the two, plus Top on Disney+.
 
-Rows are ordered by sort title (`settings: auto_sort_hubs: sort_title`): `!1`–`!5` for the basics, `!6`–`!8` for the score rows, then `~01`–`~11` for streaming.
+Rows are ordered by sort title (`settings: auto_sort_hubs: sort_title`): `!1` Trending, `!2` Popular, `!3` Latest / Recently Released, `!4` Top Rated, then `!5`–`!6` for the remaining basics (New Episodes, Disney Classics, Reality TV), `!8_1`–`!8_3` for the score and kids rows, and `~01`–`~11` for streaming.
 
 Two gotchas found along the way:
 

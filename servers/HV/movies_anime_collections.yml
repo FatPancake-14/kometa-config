@@ -53,7 +53,7 @@ collections:
         release: 365
       sort_by: release.desc
       limit: 30
-    sort_title: "!5_recently_released"
+    sort_title: "!3_recently_released"
     sync_mode: sync
     url_poster: https://theposterdb.com/api/assets/345277
     visible_home: false

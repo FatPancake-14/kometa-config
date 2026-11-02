@@ -30,7 +30,7 @@ collections:
     visible_home: false
     visible_library: true
     visible_shared: false
-    sort_title: "!3_top_rated"
+    sort_title: "!4_top_rated"
     summary: The IMDB Top Rated Movies
     url_poster: https://theposterdb.com/api/assets/248186
 
@@ -52,7 +52,7 @@ collections:
         release: 365
       sort_by: release.desc
       limit: 50
-    sort_title: "!4_recently_released"
+    sort_title: "!3_recently_released"
     sync_mode: sync
     url_poster: https://theposterdb.com/api/assets/345277
     visible_home: false

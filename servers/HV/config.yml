@@ -106,8 +106,9 @@ libraries:
       mode: added(35)
     - schedule: daily
       mode: added(2)
-    run_order:
-    - overlays
+    settings:
+      run_order:              # must sit under settings:, or Kometa ignores it and runs a collections pass (which re-sorts hubs)
+      - overlays
     overlay_files:
     - file: config/score_ring_4k.yml
 
@@ -122,8 +123,9 @@ libraries:
       mode: added(35)
     - schedule: daily
       mode: added(2)
-    run_order:
-    - overlays
+    settings:
+      run_order:              # must sit under settings:, or Kometa ignores it and runs a collections pass (which re-sorts hubs)
+      - overlays
     overlay_files:
     - file: config/score_ring_4k.yml
   TV Shows 4K Overlays:
@@ -137,8 +139,9 @@ libraries:
       mode: added(35)
     - schedule: daily
       mode: added(2)
-    run_order:
-    - overlays
+    settings:
+      run_order:              # must sit under settings:, or Kometa ignores it and runs a collections pass (which re-sorts hubs)
+      - overlays
     overlay_files:
     - file: config/score_ring_4k.yml
 settings:
