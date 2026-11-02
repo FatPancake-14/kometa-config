@@ -22,13 +22,19 @@ libraries:
     remove_overlays: false
     collection_files:
     - file: config/movies_collections.yml
-    - file: config/score_collections_movies.yml
+    - file: config/score_rows_movies.yml   # films picked nightly by ~/kometa-scores/sync_scores.py
+      template_variables:
+        home: true
     - file: config/streaming_collections.yml
   Movies 4Kmini:
     remove_overlays: false
     collection_files:
     - file: config/movies_collections.yml
-    - file: config/score_collections_movies.yml
+    - file: config/score_rows_movies.yml
+      template_variables:
+        home: true
+        use_gems: false
+        use_docs: false
     - file: config/streaming_collections.yml
   TV Shows 4K:
     remove_overlays: false
@@ -42,6 +48,7 @@ libraries:
     remove_overlays: false
     collection_files:
     - file: config/movies_collections.yml
+    - file: config/score_rows_movies.yml
     - file: config/streaming_collections.yml
       template_variables:
         discover_limit: 80
@@ -56,6 +63,9 @@ libraries:
     remove_overlays: false
     collection_files:
     - file: config/movies_international_collections.yml
+    - file: config/score_rows_movies.yml
+      template_variables:
+        use_docs: false
     - file: config/streaming_collections.yml
       template_variables:
         discover_limit: 150
@@ -71,6 +81,10 @@ libraries:
     collection_files:
     - file: config/movies_kids_collections.yml
     - file: config/kids_rows_collections.yml
+    - file: config/score_rows_movies.yml
+      template_variables:
+        use_gems: false
+        use_docs: false
   Kids TV Shows:
     remove_overlays: false
     collection_files:

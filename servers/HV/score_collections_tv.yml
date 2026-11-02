@@ -1,6 +1,6 @@
 # Discovery rows for TV, built from the MDBList score (stored in Plex's user rating, 0-10, so 8.0 = 80).
-# Same approach as score_collections_movies.yml: Kometa labels what qualifies, the row is a smart collection
-# on that label, unwatched by the viewer, 50 at random.
+# Kometa labels what qualifies (smart_label), the row is a smart collection on that label,
+# unwatched by the viewer, 50 at random.
 collections:
   Rated 80+ · Not Seen Yet:
     smart_label:

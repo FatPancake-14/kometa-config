@@ -1,0 +1,53 @@
+# Score rows for film libraries: Rated 80+, Hidden Gems, Under 100 Minutes, Best Documentaries.
+# tools/sync_scores.py picks the films each night (from MDBList: every site's score and vote count) and tags
+# them with a Plex label named after the row, the best 300 at most. Each row here is a Plex smart collection
+# on that label that leaves out what the viewer has already watched (worked out per viewer) and shows 50
+# at random, so it reshuffles on every visit.
+#
+# template_variables (per library, in config.yml):
+#   home: true          also show the rows on Home (default: the library's Recommended tab only)
+#   use_gems: false     no Hidden Gems row in this library
+#   use_docs: false     no Best Documentaries row in this library
+# sync_scores.py reads the same switches, so the labels and the rows always match.
+templates:
+  score row:
+    default:
+      home: false
+    smart_filter:
+      sort_by: random
+      limit: 50
+      all:
+        label: <<collection_name>>
+        unplayed: true
+    visible_library: true
+    visible_home: <<home>>
+    visible_shared: <<home>>
+  gems switch:
+    default:
+      use_gems: true
+    run_definition: <<use_gems>>
+  docs switch:
+    default:
+      use_docs: true
+    run_definition: <<use_docs>>
+
+collections:
+  Rated 80+ · Not Seen Yet:
+    template: {name: score row}
+    sort_title: "!8_1_rated_80"
+    summary: "Scored 80+ out of 100 by enough people, with critics and audiences in agreement, and you haven't seen them yet. A different 50 every visit."
+
+  Hidden Gems:
+    template: [{name: score row}, {name: gems switch}]
+    sort_title: "!8_2_hidden_gems"
+    summary: "Loved by the people who've seen them (78+), but not many have. A different 50 every visit."
+
+  Under 100 Minutes:
+    template: {name: score row}
+    sort_title: "!8_3_under_100"
+    summary: "Well-rated films (75+) that run 75 to 99 minutes, for when you don't want a long one."
+
+  Best Documentaries:
+    template: [{name: score row}, {name: docs switch}]
+    sort_title: "!8_4_documentaries"
+    summary: "The best-rated documentaries (80+) you haven't seen yet. A different 50 every visit."

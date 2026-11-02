@@ -97,15 +97,24 @@ Hand-written collection files per library rather than Kometa's defaults. Files a
 
 **The basics** (every library): Trending, Popular, Latest, Top Rated, Recently Released and New Episodes, mostly from MDBList lists, IMDb charts and TMDb, plus a few extras (Reality TV, Disney Classics).
 
-**Score rows** ([`score_collections_movies.yml`](servers/HV/score_collections_movies.yml), [`score_collections_tv.yml`](servers/HV/score_collections_tv.yml)), on Home and in the library, for libraries that have scores:
+**Score rows for films** ([`score_rows_movies.yml`](servers/HV/score_rows_movies.yml)), in Movies 4K, Movies 4Kmini, Movies, Movies International and Kids Movies. The 4K libraries also show them on Home.
 
-| Row | Movies | TV |
-|---|---|---|
-| Rated 80+ · Not Seen Yet | score 80+ | score 80+ |
-| Hidden Gems | score 75+, 20–200 TMDb votes | same |
-| Under 100 Minutes / Binge-able | score 70+, under 100 minutes | score 80+, ended, 1–3 seasons |
+A plain "score 80+" rule gave 1,600 films in a 37,000-film library, plenty of them with a handful of votes or a score inflated by one site. So the films are picked by [`tools/sync_scores.py`](tools/sync_scores.py) instead, after the nightly scores. It uses the full MDBList record the score comes from (every site's score and vote count, runtime, genres), so it costs no extra requests:
 
-A big library can have hundreds of qualifying titles, so these never become long lists. Kometa labels everything that qualifies (`smart_label`), and each row is a Plex smart collection on that label that drops what *the viewer* has already watched and shows 50 at random. It reshuffles on every visit and stays useful as you work through it.
+| Row | Rule |
+|---|---|
+| Rated 80+ · Not Seen Yet | average 80+, 25,000+ IMDb votes, 60+ minutes, and the sites agree: at least three of IMDb, Letterboxd, RT critics, RT audience and Metacritic (each with enough votes to count), none below 70 |
+| Hidden Gems | average 78+, 2,000–25,000 IMDb votes, Letterboxd 3.7+, 70+ minutes, sites agree (none below 65) |
+| Under 100 Minutes | average 75+, 75–99 minutes, 10,000+ IMDb votes, sites agree (none below 65) |
+| Best Documentaries | documentaries only: average 80+, 5,000+ IMDb votes, 60+ minutes, sites agree (none below 70) |
+
+- Documentaries only appear in their own row.
+- Filmed stage shows, concert films and stand-up specials are left out of all four, using TMDb's tags (*filmed theater*, *filmed play*, *musical proshot*, *concert film*, *stand-up comedy*).
+- Each row keeps the best 300 by score.
+
+The script tags the picks with a Plex label named after the row, with one batch edit per 100 films (fast even through a slow proxy). Each row is a Plex smart collection on that label that drops what *the viewer* has already watched and shows 50 at random, so it reshuffles on every visit. A library gets the rows by loading the file; `use_gems: false` / `use_docs: false` in its `template_variables` switch a row off, and the script reads the same switches. If a row would suddenly shrink by more than half (a sign of bad data), it is left as is; `--rows-reset` allows it once after a rule change.
+
+**Score rows for TV** ([`score_collections_tv.yml`](servers/HV/score_collections_tv.yml)), in TV Shows 4K: Rated 80+ · Not Seen Yet (score 80+), Hidden Gems (75+, 20–200 TMDb votes) and Binge-able (80+, ended, 1–3 seasons). Kometa labels what qualifies (`smart_label`), and each row works the same way as above.
 
 **UK streaming rows** ([`streaming_collections.yml`](servers/HV/streaming_collections.yml)), in each library's Recommended tab only:
 
@@ -118,7 +127,7 @@ Kometa fetches every matched title from Plex *before* it applies a row's `limit:
 
 **Kids rows** ([`kids_rows_collections.yml`](servers/HV/kids_rows_collections.yml)): All Ages (U) and Parental Guidance (PG), each matching both the UK and US ratings because Plex holds a mix of the two, plus Top on Disney+.
 
-Rows are ordered by sort title (`settings: auto_sort_hubs: sort_title`): `!1` Trending, `!2` Popular, `!3` Latest / Recently Released, `!4` Top Rated, then `!5`–`!6` for the remaining basics (New Episodes, Disney Classics, Reality TV), `!8_1`–`!8_3` for the score and kids rows, and `~01`–`~11` for streaming.
+Rows are ordered by sort title (`settings: auto_sort_hubs: sort_title`): `!1` Trending, `!2` Popular, `!3` Latest / Recently Released, `!4` Top Rated, then `!5`–`!6` for the remaining basics (New Episodes, Disney Classics, Reality TV), `!7_1`–`!7_2` for the kids rows, `!8_1`–`!8_4` for the score rows, and `~01`–`~11` for streaming.
 
 Two gotchas found along the way:
 
