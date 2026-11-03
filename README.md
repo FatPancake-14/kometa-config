@@ -135,16 +135,15 @@ A plain "score 80+" rule gave 1,600 films in a 37,000-film library, plenty of th
 
 **UK streaming rows** ([`streaming_collections.yml`](servers/HV/streaming_collections.yml)), in each library's Recommended tab only:
 
-- *Top on* Netflix, Prime Video, Disney+, Apple TV+, Paramount+, BritBox and MUBI: MDBList's weekly UK streaming charts, in chart order.
-- *Popular on* BBC iPlayer, ITVX, Channel 4 and NOW: these have no chart, so TMDb's UK "available on" data, most popular first.
+- *Top on* Netflix, Prime Video, Disney+, Apple TV, Paramount+ and MUBI: MDBList's weekly UK streaming charts (JustWatch data), in chart order.
+- *Top on* BBC iPlayer, ITVX, Channel 4 and NOW: MDBList has UK charts for these too, but Kometa's `mdblist_streaming` won't accept them, so [`tools/uk_charts.py`](tools/uk_charts.py) fetches them nightly (before Kometa) and writes each chart's TMDb IDs, in order, into `uk_charts_movies.yml` and `uk_charts_tv.yml` next to `config.yml`. Kometa builds the rows from those files.
+  - The codes (`bbc`, `itv`, `al4`, `ntv`) aren't in MDBList's docs or on its website, and MDBList answers a code it doesn't know with the chart for *all* services rather than an error. So the script rejects a chart that matches the all-services one (or is empty, or fails to load) and keeps the previous night's titles.
 
-Each row only shows what's in the library, and a row with nothing to show is removed.
-
-Kometa fetches every matched title from Plex *before* it applies a row's `limit: 50`. In a 37,000-film library, 500 TMDb results took about 20 minutes per row, so large libraries pass a smaller `discover_limit` through `template_variables` in `config.yml` (80–250 here; 500 by default).
+Each row only shows what's in the library (in chart order), and a row with fewer than 5 is removed. The charts are 20 titles long, so the rows are smaller in the smaller libraries. BritBox has no UK chart any more: BritBox UK was folded into ITVX in 2024.
 
 **Kids rows** ([`kids_rows_collections.yml`](servers/HV/kids_rows_collections.yml)): All Ages (U) and Parental Guidance (PG), each matching both the UK and US ratings because Plex holds a mix of the two, plus Top on Disney+.
 
-Rows are ordered by sort title by [`tools/sort_hubs.py`](tools/sort_hubs.py), run straight after Kometa each night. (Kometa's own `auto_sort_hubs` isn't used: it moves the rows above Plex's built-in ones, which pushes Continue Watching to the bottom of the Recommended tab.) The order: `!1` Trending, `!2` Popular, `!3` Latest / Recently Released, `!4` Top Rated, then `!5`–`!6` for the remaining basics (New Episodes, Disney Classics, Reality TV), `!7_1`–`!7_2` for the kids rows, `!8_1`–`!8_4` for the score rows, and `~01`–`~11` for streaming.
+Rows are ordered by sort title by [`tools/sort_hubs.py`](tools/sort_hubs.py), run straight after Kometa each night. (Kometa's own `auto_sort_hubs` isn't used: it moves the rows above Plex's built-in ones, which pushes Continue Watching to the bottom of the Recommended tab.) The order: `!1` Trending, `!2` Popular, `!3` Latest / Recently Released, `!4` Top Rated, then `!5`–`!6` for the remaining basics (New Episodes, Disney Classics, Reality TV), `!7_1`–`!7_2` for the kids rows, `!8_1`–`!8_4` for the score rows, and `~01`–`~10` for streaming.
 
 Two gotchas found along the way:
 
@@ -159,7 +158,7 @@ Two gotchas found along the way:
 
 - **Secrets** are `<<placeholders>>`. Kometa fills them from `KOMETA_*` environment variables or a `.env` file next to `config.yml`; see [`servers/.env.example`](servers/.env.example). For example `token: <<plex_token>>` comes from `KOMETA_PLEX_TOKEN`.
 - **Overlays:** `pip install pillow`, run `python3 tools/build_overlays.py`, then copy `overlays/images/` to `config/overlay-images/` and `overlays/score_ring_4k.yml` to `config/` on your Kometa server. Change sizes, colours, bands or the vote threshold at the top of the script.
-- **Scores:** `pip install pyyaml`, copy [`tools/sync_scores.py`](tools/sync_scores.py) to your server and run it with your `config.yml` and library names (add `--dry` to see what it would change). [`servers/HV/run_scores.sh`](servers/HV/run_scores.sh) is my nightly wrapper. The overlays need these scores in place before Kometa runs.
+- **Scores:** `pip install pyyaml`, copy [`tools/sync_scores.py`](tools/sync_scores.py) to your server and run it with your `config.yml` and library names (add `--dry` to see what it would change). [`servers/HV/run_scores.sh`](servers/HV/run_scores.sh) is my nightly wrapper (it also runs `uk_charts.py`). The overlays need these scores in place before Kometa runs.
 - **Font:** [Figtree](https://github.com/erikdkennedy/figtree) (SIL Open Font License, in [`fonts/`](fonts)), weight-matched to Avenir Next Bold.
 - **Keeping this repo current:** `tools/pull_from_server.sh` copies each server's live YAML files into `servers/<name>/` and runs [`tools/sanitize.py`](tools/sanitize.py), which replaces secrets with placeholders and refuses to pass anything that still looks like a key, token or IP address.
 

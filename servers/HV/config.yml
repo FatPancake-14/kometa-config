@@ -26,6 +26,7 @@ libraries:
       template_variables:
         home: true
     - file: config/streaming_collections.yml
+    - file: config/uk_charts_movies.yml   # written nightly by kometa-tools/uk_charts.py
   Movies 4Kmini:
     remove_overlays: false
     collection_files:
@@ -36,6 +37,7 @@ libraries:
         use_gems: false
         use_docs: false
     - file: config/streaming_collections.yml
+    - file: config/uk_charts_movies.yml
   TV Shows 4K:
     remove_overlays: false
     collection_files:
@@ -44,24 +46,21 @@ libraries:
       template_variables:
         home: true
     - file: config/streaming_collections.yml
-      template_variables:
-        discover_limit: 250
+    - file: config/uk_charts_tv.yml
   Movies:
     remove_overlays: false
     collection_files:
     - file: config/movies_collections.yml
     - file: config/score_rows_movies.yml
     - file: config/streaming_collections.yml
-      template_variables:
-        discover_limit: 80
+    - file: config/uk_charts_movies.yml
   TV Shows:
     remove_overlays: false
     collection_files:
     - file: config/tv_collections.yml
     - file: config/score_rows_tv.yml
     - file: config/streaming_collections.yml
-      template_variables:
-        discover_limit: 100
+    - file: config/uk_charts_tv.yml
   Movies International:
     remove_overlays: false
     collection_files:
@@ -70,15 +69,13 @@ libraries:
       template_variables:
         use_docs: false
     - file: config/streaming_collections.yml
-      template_variables:
-        discover_limit: 150
+    - file: config/uk_charts_movies.yml
   TV Shows International:
     remove_overlays: false
     collection_files:
     - file: config/tv_international_collections.yml
     - file: config/streaming_collections.yml
-      template_variables:
-        discover_limit: 150
+    - file: config/uk_charts_tv.yml
   Kids Movies:
     remove_overlays: false
     collection_files:
