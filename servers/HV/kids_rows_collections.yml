@@ -8,6 +8,7 @@ collections:
       any:
         content_rating: ["gb/U", "gb/Uc", "gb/0+", "G", "TV-Y", "TV-G"]
     sort_title: "!7_1_age_u"
+    file_poster: "config/posters/All Ages (U).jpg"
     summary: "Rated U (or the US equivalent): suitable for everyone. A different 50 every visit."
     visible_home: true
     visible_shared: true
@@ -20,6 +21,7 @@ collections:
       any:
         content_rating: ["gb/PG", "PG", "TV-PG", "TV-Y7", "TV-Y7-FV"]
     sort_title: "!7_2_age_pg"
+    file_poster: "config/posters/Parental Guidance (PG).jpg"
     summary: "Rated PG (or the US equivalent): fine for most children, some scenes may suit younger ones less."
     visible_home: true
     visible_shared: true
@@ -35,7 +37,8 @@ collections:
     limit: 50
     minimum_items: 5
     delete_below_minimum: true
-    sort_title: "~03_Top on Disney+"
+    sort_title: "!9_03_Top on Disney+"
+    file_poster: "config/posters/Top on Disney+.jpg"
     summary: "What's most watched on Disney+ in the UK this week, from this library."
     visible_home: false
     visible_shared: false

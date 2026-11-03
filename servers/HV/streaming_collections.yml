@@ -18,8 +18,9 @@ templates:
     visible_home: false
     visible_shared: false
     visible_library: true
-    sort_title: "~<<order>>_<<collection_name>>"
+    sort_title: "!9_<<order>>_<<collection_name>>"   # "!" so they stay with the other rows: Plex sorts ' # ~ $ and digits after it
     summary: "What's most watched on <<service>> in the UK this week, from this library."
+    file_poster: "config/posters/<<collection_name>>.jpg"   # tools/make_collection_posters.py
 
 collections:
   Top on Netflix:

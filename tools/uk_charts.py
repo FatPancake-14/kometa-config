@@ -114,8 +114,9 @@ def main():
                 "visible_home": False,
                 "visible_shared": False,
                 "visible_library": True,
-                "sort_title": f"~{order}_{name}",
+                "sort_title": f"!9_{order}_{name}",
                 "summary": f"What's most watched on {service} in the UK this week, from this library.",
+                "file_poster": f"config/posters/{name}.jpg",   # made by make_collection_posters.py
             }
         if not collections:
             print(f"no charts for {fname}; leaving it as it is")

@@ -10,3 +10,7 @@ overlays/*Original Posters/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Collection posters (made from ThePosterDB artwork and service logos) and fonts stay on the server
+posters/
+tools/fonts/

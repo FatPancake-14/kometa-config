@@ -143,7 +143,14 @@ Each row only shows what's in the library (in chart order), and a row with fewer
 
 **Kids rows** ([`kids_rows_collections.yml`](servers/HV/kids_rows_collections.yml)): All Ages (U) and Parental Guidance (PG), each matching both the UK and US ratings because Plex holds a mix of the two, plus Top on Disney+.
 
-Rows are ordered by sort title by [`tools/sort_hubs.py`](tools/sort_hubs.py), run straight after Kometa each night. (Kometa's own `auto_sort_hubs` isn't used: it moves the rows above Plex's built-in ones, which pushes Continue Watching to the bottom of the Recommended tab.) The order: `!1` Trending, `!2` Popular, `!3` Latest / Recently Released, `!4` Top Rated, then `!5`–`!6` for the remaining basics (New Episodes, Disney Classics, Reality TV), `!7_1`–`!7_2` for the kids rows, `!8_1`–`!8_4` for the score rows, and `~01`–`~10` for streaming.
+**Posters** for these rows come from [`tools/make_collection_posters.py`](tools/make_collection_posters.py) and sit in `config/posters/` on the server, one per collection name (each row's `file_poster`, so Kometa re-applies a poster if it's changed in Plex, and only uploads again when the image changes):
+
+- Score and kids rows: the same style as the ThePosterDB posters used for Trending, Popular and the rest. The script takes the Trending poster, paints over its word and sets new words in Open Sans Bold at the same size, position and colours.
+- Streaming rows: the service's own logo where the Plex chevron sits, and its colours for the frame and the words ("Most watched").
+
+The posters aren't in this repo (they're built from ThePosterDB artwork and the services' logos, which the script downloads when it runs). About 150–220 KB each, as JPEG.
+
+Rows are ordered by sort title by [`tools/sort_hubs.py`](tools/sort_hubs.py), run straight after Kometa each night. (Kometa's own `auto_sort_hubs` isn't used: it moves the rows above Plex's built-in ones, which pushes Continue Watching to the bottom of the Recommended tab.) The order: `!1` Trending, `!2` Popular, `!3` Latest / Recently Released, `!4` Top Rated, then `!5`–`!6` for the remaining basics (New Episodes, Disney Classics, Reality TV), `!7_1`–`!7_2` for the kids rows, `!8_1`–`!8_4` for the score rows, and `!9_01`–`!9_10` for streaming. Every managed row starts with `!` so they stay together at the top of the library view too: Plex sorts `'`, `#`, `~`, `$` and digits after `!`, so a `~` prefix put titles like *The 'Burbs* and *#blackAF* between the rows.
 
 Two gotchas found along the way:
 

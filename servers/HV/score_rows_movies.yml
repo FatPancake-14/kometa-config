@@ -20,6 +20,7 @@ templates:
     visible_library: true
     visible_home: <<home>>
     visible_shared: <<home>>
+    file_poster: "config/posters/<<collection_name>>.jpg"   # tools/make_collection_posters.py
   gems switch:
     default:
       use_gems: true
