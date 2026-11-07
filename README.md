@@ -103,7 +103,7 @@ A plain "score 80+" rule gave 1,600 films in a 37,000-film library, plenty of th
 
 | Row | Rule |
 |---|---|
-| Rated 80+ | average 80+, 25,000+ IMDb votes, 60+ minutes, and the sites agree: at least three of IMDb, Letterboxd, RT critics, RT audience and Metacritic (each with enough votes to count), none below 70 |
+| Critically Acclaimed | average 80+, 25,000+ IMDb votes, 60+ minutes, and the sites agree: at least three of IMDb, Letterboxd, RT critics, RT audience and Metacritic (each with enough votes to count), none below 70 |
 | Hidden Gems | average 78+, 2,000–25,000 IMDb votes, Letterboxd 3.7+, 70+ minutes, sites agree (none below 65) |
 | Under 100 Minutes | average 75+, 75–99 minutes, 10,000+ IMDb votes, sites agree (none below 65) |
 | Best Documentaries | documentaries only: average 80+, 5,000+ IMDb votes, 60+ minutes, sites agree (none below 70) |
@@ -124,14 +124,14 @@ A plain "score 80+" rule gave 1,600 films in a 37,000-film library, plenty of th
 
 | Row | Rule |
 |---|---|
-| Rated 80+ | average 80+, 20,000+ IMDb votes, and the sites agree: at least three of IMDb, Trakt, TMDb, RT critics, Metacritic and Letterboxd (each with enough votes to count), none below 70 |
-| Hidden Gems | average 78+, 1,000–20,000 IMDb votes (where Rated 80+ starts), reviewed by critics (RT or Metacritic), first aired over a year ago (early scores run high), sites agree (none below 65) |
+| Critically Acclaimed | average 80+, 20,000+ IMDb votes, and the sites agree: at least three of IMDb, Trakt, TMDb, RT critics, Metacritic and Letterboxd (each with enough votes to count), none below 70 |
+| Hidden Gems | average 78+, 1,000–20,000 IMDb votes (where Critically Acclaimed starts), reviewed by critics (RT or Metacritic), first aired over a year ago (early scores run high), sites agree (none below 65) |
 | Binge-able | finished as planned (not cancelled), one to three seasons, all of it in the library, average 75+, 5,000+ IMDb votes, sites agree (none below 62) |
 | Best Documentaries | documentaries only: average 80+, 2,000+ IMDb votes, sites agree (none below 70) |
 
 - Documentaries only appear in their own row; reality, talk, news and game shows are left out.
 - Only shows first aired from 1 January 2000 (`TV_FIRST_AIRED`), a personal preference (films go back to 1980).
-- Binge-able overlaps with Rated 80+ on purpose: they're for different moods.
+- Binge-able overlaps with Critically Acclaimed on purpose: they're for different moods.
 
 **UK streaming rows** ([`streaming_collections.yml`](servers/HV/streaming_collections.yml)), in each library's Recommended tab only:
 

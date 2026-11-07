@@ -49,7 +49,7 @@ POSTERS = {
     "Top on Channel 4": ["TOP ON", "|", "CHANNEL 4"],
     "Top on NOW": ["TOP ON", "|", "NOW"],
     # score rows
-    "Rated 80+": ["RATED", "80+"],
+    "Critically Acclaimed": ["CRITICALLY", "ACCLAIMED"],
     "Hidden Gems": ["HIDDEN", "GEMS"],
     "Under 100 Minutes": ["UNDER 100", "MINUTES"],
     "Best Documentaries": ["BEST", "DOCUMENTARIES"],

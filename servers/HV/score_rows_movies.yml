@@ -1,4 +1,4 @@
-# Score rows for film libraries: Rated 80+, Hidden Gems, Under 100 Minutes, Best Documentaries.
+# Score rows for film libraries: Critically Acclaimed, Hidden Gems, Under 100 Minutes, Best Documentaries.
 # tools/sync_scores.py picks today's selection each night: 50 at random from every film that passes the
 # row's rules (from MDBList: every site's score and vote count), the same all day. It tags them with a Plex
 # label named after the row, and each row here is a Plex smart collection on that label, best score first.
@@ -31,9 +31,9 @@ templates:
     run_definition: <<use_docs>>
 
 collections:
-  Rated 80+:
+  Critically Acclaimed:   # was "Rated 80+" until 2026-11-08: the name only made sense next to the 4K score rings
     template: {name: score row}
-    sort_title: "!8_1_rated_80"
+    sort_title: "!8_1_critically_acclaimed"
     summary: "Today's 50: films scored 80+ out of 100 by enough people, with critics and audiences in agreement. A new selection every day."
 
   Hidden Gems:

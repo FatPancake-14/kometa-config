@@ -20,8 +20,8 @@ Safety:
 
 Score rows: after the scores, the script also picks today's selection for the discovery rows, 50 at random
 from everything that qualifies, the same all day and new each night:
-- films: Rated 80+, Hidden Gems, Under 100 Minutes, Best Documentaries (config/score_rows_movies.yml)
-- shows: Rated 80+, Hidden Gems, Binge-able, Best Documentaries (config/score_rows_tv.yml)
+- films: Critically Acclaimed, Hidden Gems, Under 100 Minutes, Best Documentaries (config/score_rows_movies.yml)
+- shows: Critically Acclaimed, Hidden Gems, Binge-able, Best Documentaries (config/score_rows_tv.yml)
 It tags them with a Plex label named after the row, and Kometa only shows the rows (a smart collection per
 label). A library gets rows when its Kometa entry loads one of those files; `use_gems: false` or
 `use_docs: false` in its template_variables switches a row off there. The rules use the full MDBList
@@ -207,7 +207,7 @@ ROW_FILES = {"movie": "score_rows_movies.yml", "show": "score_rows_tv.yml"}
 ROW_MIN_YEAR = 1980         # the user's preference: no films older than this in the rows (unknown year counts as older)
 TV_FIRST_AIRED = "2000-01-01"  # and no shows first aired before this
 ROW_SIZE = 50        # today's selection per row: random from everything that qualifies, fixed for the day
-OLD_LABELS = ["Rated 80+ · Not Seen Yet", "Rated 80+, Not Seen Yet"]  # earlier row names; removed wherever found
+OLD_LABELS = ["Rated 80+ · Not Seen Yet", "Rated 80+, Not Seen Yet", "Rated 80+"]  # earlier row names; removed wherever found
 STATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "state", "rows.json")  # pool sizes, for the guard
 # TMDb tags for things that aren't films: filmed theater, filmed play, musical proshot, concert film, stand-up comedy
 NOT_FILMS_KEYWORDS = "246884|229756|334841|156205|9716"
@@ -219,8 +219,8 @@ def agree(f, floor):  # at least three sites with enough votes, and none of them
 
 
 ROWS = {  # row (= Plex label = Kometa collection name): (switch in template_variables, rule). 60+ minutes keeps out shorts and TV specials
-    "Rated 80+": (None, lambda f: not f["doc"] and f["avg"] >= 80 and f["imdb_votes"] >= 25000
-                                 and f["runtime"] >= 60 and agree(f, 70)),
+    "Critically Acclaimed": (None, lambda f: not f["doc"] and f["avg"] >= 80 and f["imdb_votes"] >= 25000
+                                            and f["runtime"] >= 60 and agree(f, 70)),
     "Hidden Gems": ("use_gems", lambda f: not f["doc"] and f["avg"] >= 78 and 2000 <= f["imdb_votes"] <= 25000
                     and f["lb"] >= 74 and f["runtime"] >= 70 and agree(f, 65)),
     "Under 100 Minutes": (None, lambda f: not f["doc"] and f["avg"] >= 75 and 75 <= f["runtime"] <= 99
@@ -231,8 +231,8 @@ ROWS = {  # row (= Plex label = Kometa collection name): (switch in template_var
 
 
 YEAR_AGO = (datetime.date.today() - datetime.timedelta(days=365)).isoformat()
-TV_ROWS = {  # shows: like the film rows, with fewer IMDb votes. Rated 80+ starts where Hidden Gems stops (20,000)
-    "Rated 80+": (None, lambda f: not f["doc"] and f["avg"] >= 80 and f["imdb_votes"] >= 20000 and agree(f, 70)),
+TV_ROWS = {  # shows: like the film rows, with fewer IMDb votes. Critically Acclaimed starts where Hidden Gems stops (20,000)
+    "Critically Acclaimed": (None, lambda f: not f["doc"] and f["avg"] >= 80 and f["imdb_votes"] >= 20000 and agree(f, 70)),
     "Hidden Gems": ("use_gems", lambda f: not f["doc"] and f["avg"] >= 78 and 1000 <= f["imdb_votes"] < 20000 and agree(f, 65)
                     and f["critics"] and f["first_aired"] <= YEAR_AGO),  # a year in: early scores run high
     "Binge-able": (None, lambda f: not f["doc"] and f["ended"] and 1 <= f["seasons"] <= 3 and f["avg"] >= 75
